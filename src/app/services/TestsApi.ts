@@ -4,6 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import customFetchBase from "../interceptor";
 import { AddCriteriaBodyT } from "../Types/TestApiReqTypes";
 import { Answer } from "../slices/quizSlice";
+import { CriteriaT } from "../Types/ResultsType";
 
 const token = localStorage.getItem("token");
 
@@ -19,6 +20,11 @@ export const testsApi = createApi({
     getTestById: builder.query<TestT, string>({
       query: (id: string) => ({
         url: `/tests/${id}`,
+      }),
+    }),
+    getTestCriterias: builder.query<CriteriaT[], string>({
+      query: (id: string) => ({
+        url: `/tests/${id}/criteria`,
       }),
     }),
     addCriteria: builder.mutation<null, AddCriteriaBodyT >({
@@ -42,8 +48,7 @@ export const testsApi = createApi({
         };
       },
     }),
-   
   }),
 });
 
-export const { useGetTestsQuery, useGetTestByIdQuery, useAddCriteriaMutation, useSaveAnswersMutation} = testsApi;
+export const { useGetTestsQuery, useGetTestByIdQuery, useAddCriteriaMutation, useGetTestCriteriasQuery, useSaveAnswersMutation} = testsApi;
