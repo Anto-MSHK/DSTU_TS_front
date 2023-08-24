@@ -10,6 +10,7 @@ import {
     Progress,
     Result,
     Row,
+    Segmented,
     Space,
     Tag,
     theme,
@@ -23,6 +24,7 @@ import { InfoOutlined, PlusOutlined } from "@ant-design/icons";
 import { useGetUserTestResultsByIdQuery } from "../../app/services/UserApi";
 import { useAddCriteriaMutation, useGetTestByIdQuery, useGetTestCriteriasQuery } from "../../app/services/TestsApi";
 import { ResultsT } from "../../app/Types/ResultsType";
+import NewsEditor from "../NewsEditor/NewsEditor";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -47,6 +49,13 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
     const { data: testCriterias } = useGetTestCriteriasQuery(activeElement, {
         skip: skipCriteriaReq,
     })
+    const [selectedNews, setSelectedNews] = useState<{ id: number; title: string; content: string; date: string; } | null>(null);
+
+    const [newsTitle, setNewsTitle] = useState("");
+    const [newsContent, setNewsContent] = useState("");
+    const [isAddingNews, setIsAddingNews] = useState(false);
+
+
 
     const resultChartData = testData?.criterias.map((item) => {
         return {
@@ -59,6 +68,46 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
+
+    const handleAddNews = () => {
+        if (!newsTitle || !newsContent) {
+            message.error("Заголовок и текст новости должны быть заполнены");
+            return;
+        }
+
+        // Simulate adding news item
+        const newNewsItem = {
+            id: mockNewsData.length + 1,
+            title: newsTitle,
+            content: newsContent,
+            date: new Date().toISOString().split('T')[0], // Get current date in YYYY-MM-DD format
+        };
+
+        mockNewsData.push(newNewsItem);
+
+        setNewsTitle("");
+        setNewsContent("");
+        setIsAddingNews(false);
+
+        message.success("Новость успешно добавлена!");
+    };
+
+
+    const mockNewsData = [
+        {
+            id: 1,
+            title: 'Заголовок новости 1',
+            content: 'Содержание новости 1...',
+            date: '2023-08-24',
+        },
+        {
+            id: 2,
+            title: 'Заголовок новости 2',
+            content: 'Содержание новости 2...',
+            date: '2023-08-23',
+        },
+        // Добавьте еще новостей по аналогии
+    ];
 
 
     function getItem(
@@ -78,10 +127,18 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
     }
     const items: MenuProps['items'] = getMenuItmes()
     const onClick: MenuProps['onClick'] = (e) => {
-        setSkip(false)
-        setActiveElement(e.key)
-        !isPlainUser && setSkipCriteriaReq(false)
+        setSkip(false);
+        setActiveElement(e.key);
+        !isPlainUser && setSkipCriteriaReq(false);
+
+        if (selectedOption === 'Новости') {
+            const selectedNewsId = e.key.replace('news', '');
+            const selectedNewsItem = mockNewsData.find(item => item.id.toString() === selectedNewsId);
+            setSelectedNews(selectedNewsItem || null); // Use null if news item is not found
+        }
     };
+
+
     function getMenuItmes() {
 
 
@@ -102,6 +159,15 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                 return getItem(item.testInfo.name, item.testInfo.id)
             })
         }
+    }
+
+    const newsItems = mockNewsData.map((item) => {
+        return getItem(item.title, `news${item.id}`);
+    });
+
+// Функция для создания массива items только с заголовками
+    function getNewsItems() {
+        return newsItems;
     }
 
 
@@ -125,8 +191,17 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
             });
     };
 
+    const [selectedOption, setSelectedOption] = useState('Новости'); // Изначально выбрана опция 'Новости'
+
+    const handleOptionChange = (option: any) => {
+        setSelectedOption(option);
+        // Здесь вы можете выполнить другие действия в зависимости от выбранной опции
+        // Например, отправка данных на сервер, загрузка соответствующего контента и так далее
+    };
+
     return (
         <MainLayout>
+
             <div style={{ display: "flex" }}>
                 {isError && !isLoading && (
                     <Card
@@ -151,19 +226,37 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                         style={{ width: "300px", height: "500px" }}
                     />
                 )}
-                {items?.length && (
-                    <Menu
-                        onClick={onClick}
-                        style={{
-                            maxWidth: "300px",
-                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                            borderRadius: 10,
-                        }}
-                        mode="inline"
-                        items={items}
-                    />
-                )}
-                {activeElement ? (
+                <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
+                    <Segmented options={['Новости', 'Тесты']} onChange={handleOptionChange} />
+                    {items?.length && (
+                        <Menu
+                            onClick={onClick}
+                            style={{
+                                width: "300px",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                borderRadius: 10,
+                                height: '50vh'
+                            }}
+                            mode="inline"
+                            items={ selectedOption === 'Новости' ?  getNewsItems() : items}
+                        />
+                    )}
+                </div>
+                {
+                    selectedOption === 'Новости' && selectedNews ? (
+                            <div style={{display: 'flex', flexDirection: 'column', marginLeft: '10px', width: '100vw', height: '100vh'}}>
+                                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                    <Button style={{ width: '200px' }} onClick={() => setIsAddingNews(true)}>Добавить</Button>
+                                </div>
+                                <div style={{display: 'flex', gap: 10, flexDirection: 'column', marginTop: '10px'}}>
+                                    <Card title={selectedNews.title} extra={<Button>Удалить</Button>}>
+                                        <p>{selectedNews.content}</p>
+                                        <p>{selectedNews.date}</p>
+                                    </Card>
+                                </div>
+                            </div>
+                    ) :
+                activeElement ? (
                     <Card
                         title={test?.name}
                         extra={test ? `${test.questions.length} вопросов` : ""}
@@ -264,6 +357,28 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                     />
                 )}
             </div>
+            <Modal
+                title="Добавление новости"
+                visible={isAddingNews}
+                onOk={handleAddNews}
+                onCancel={() => setIsAddingNews(false)}
+                cancelText={'Отменить'}
+                okText={'Добавить'}
+            >
+                <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
+                    <Input
+                        value={newsTitle}
+                        onChange={e => setNewsTitle(e.target.value)}
+                        placeholder="Заголовок новости"
+                    />
+                    <Input.TextArea
+                        value={newsContent}
+                        onChange={e => setNewsContent(e.target.value)}
+                        rows={4}
+                        placeholder="Текст новости"
+                    />
+                </div>
+            </Modal>
         </MainLayout>
     );
 };
