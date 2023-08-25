@@ -18,13 +18,13 @@ import {
 } from "antd";
 import { Link } from "react-router-dom";
 import { MainLayout } from "../../layouts/MainLayout";
-import { DirectionT } from "../../app/Types/DirectionType";
+import { DirectionT, NewsT } from "../../app/Types/DirectionType";
 import { MenuProps } from "rc-menu";
-import { InfoOutlined, PlusOutlined } from "@ant-design/icons";
+import {DeleteOutlined, InfoOutlined, PlusOutlined } from "@ant-design/icons";
 import { useGetUserTestResultsByIdQuery } from "../../app/services/UserApi";
 import { useAddCriteriaMutation, useGetTestByIdQuery, useGetTestCriteriasQuery } from "../../app/services/TestsApi";
 import { ResultsT } from "../../app/Types/ResultsType";
-import NewsEditor from "../NewsEditor/NewsEditor";
+import {useAddNewsMutation, useDeleteNewsMutation, useGetNewsQuery} from "../../app/services/NewsApi";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -49,8 +49,8 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
     const { data: testCriterias } = useGetTestCriteriasQuery(activeElement, {
         skip: skipCriteriaReq,
     })
-    const [selectedNews, setSelectedNews] = useState<{ id: number; title: string; content: string; date: string; } | null>(null);
-
+    const [selectedNews, setSelectedNews] = useState<NewsT | undefined>(undefined);
+    const { data: news, isLoading: isNewsLoading } = useGetNewsQuery(5);
     const [newsTitle, setNewsTitle] = useState("");
     const [newsContent, setNewsContent] = useState("");
     const [isAddingNews, setIsAddingNews] = useState(false);
@@ -68,46 +68,6 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
-
-    const handleAddNews = () => {
-        if (!newsTitle || !newsContent) {
-            message.error("Заголовок и текст новости должны быть заполнены");
-            return;
-        }
-
-        // Simulate adding news item
-        const newNewsItem = {
-            id: mockNewsData.length + 1,
-            title: newsTitle,
-            content: newsContent,
-            date: new Date().toISOString().split('T')[0], // Get current date in YYYY-MM-DD format
-        };
-
-        mockNewsData.push(newNewsItem);
-
-        setNewsTitle("");
-        setNewsContent("");
-        setIsAddingNews(false);
-
-        message.success("Новость успешно добавлена!");
-    };
-
-
-    const mockNewsData = [
-        {
-            id: 1,
-            title: 'Заголовок новости 1',
-            content: 'Содержание новости 1...',
-            date: '2023-08-24',
-        },
-        {
-            id: 2,
-            title: 'Заголовок новости 2',
-            content: 'Содержание новости 2...',
-            date: '2023-08-23',
-        },
-        // Добавьте еще новостей по аналогии
-    ];
 
 
     function getItem(
@@ -133,8 +93,8 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
 
         if (selectedOption === 'Новости') {
             const selectedNewsId = e.key.replace('news', '');
-            const selectedNewsItem = mockNewsData.find(item => item.id.toString() === selectedNewsId);
-            setSelectedNews(selectedNewsItem || null); // Use null if news item is not found
+            const selectedNewsItem = news && news.find(item => item.id && item.id.toString() === selectedNewsId);
+            setSelectedNews(selectedNewsItem); // Use null if news item is not found
         }
     };
 
@@ -161,7 +121,7 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         }
     }
 
-    const newsItems = mockNewsData.map((item) => {
+    const newsItems = news && news.map((item) => {
         return getItem(item.title, `news${item.id}`);
     });
 
@@ -170,6 +130,53 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         return newsItems;
     }
 
+
+    const [addNewsMutation] = useAddNewsMutation();
+
+    const handleAddNews = async () => {
+        try {
+            const newsData: Partial<NewsT> = {
+                title: newsTitle,
+                text: newsContent
+            };
+
+            const response = await addNewsMutation(newsData as NewsT);
+
+            // Handle success
+            console.log("News added successfully:", response);
+
+            setIsAddingNews(false);
+            setNewsTitle("");
+            setNewsContent("");
+        } catch (error) {
+            // Handle error
+            console.error("Error adding news:", error);
+            message.error("An error occurred while adding news.");
+        }
+    };
+
+
+    const [deleteNewsMutation] = useDeleteNewsMutation();
+
+    const handleDeleteNews = async () => {
+        try {
+            if (!selectedNews) {
+                return; // Make sure selectedNews is defined
+            }
+
+            const response = await deleteNewsMutation(selectedNews);
+
+            // Handle success
+            console.log("News deleted successfully:", response);
+
+            // You can also reset the selectedNews state here if needed
+            setSelectedNews(undefined);
+        } catch (error) {
+            // Handle error
+            console.error("Error deleting news:", error);
+            message.error("An error occurred while deleting news.");
+        }
+    };
 
     const handleAddCriteria = () => {
         if (!activeElement || !criteriaName) return;
@@ -246,12 +253,11 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                     selectedOption === 'Новости' && selectedNews ? (
                             <div style={{display: 'flex', flexDirection: 'column', marginLeft: '10px', width: '100vw', height: '100vh'}}>
                                 <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                    <Button style={{ width: '200px' }} onClick={() => setIsAddingNews(true)}>Добавить</Button>
+                                    <Button onClick={() => setIsAddingNews(true)}><PlusOutlined /> Добавить</Button>
                                 </div>
                                 <div style={{display: 'flex', gap: 10, flexDirection: 'column', marginTop: '10px'}}>
-                                    <Card title={selectedNews.title} extra={<Button>Удалить</Button>}>
-                                        <p>{selectedNews.content}</p>
-                                        <p>{selectedNews.date}</p>
+                                    <Card title={selectedNews.title} extra={<Button type={'primary'} danger onClick={handleDeleteNews}><DeleteOutlined /></Button>}>
+                                        <p>{selectedNews.text}</p>
                                     </Card>
                                 </div>
                             </div>
@@ -360,10 +366,10 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
             <Modal
                 title="Добавление новости"
                 visible={isAddingNews}
-                onOk={handleAddNews}
                 onCancel={() => setIsAddingNews(false)}
                 cancelText={'Отменить'}
                 okText={'Добавить'}
+                onOk={handleAddNews}
             >
                 <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
                     <Input
@@ -382,3 +388,11 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         </MainLayout>
     );
 };
+function deleteNewsMutation(arg0: { id: number; }) {
+    throw new Error("Function not implemented.");
+}
+
+function addNewsMutation(arg0: { title: string; text: string; }) {
+    throw new Error("Function not implemented.");
+}
+
