@@ -246,7 +246,10 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                                     selectedNews ? (
                                         <div style={{display: 'flex', gap: 10, flexDirection: 'column', marginTop: '10px'}}>
                                             <Card title={selectedNews.title} extra={<Button type={'primary'} danger onClick={handleDeleteNews}><DeleteOutlined /></Button>}>
-                                                <p>{selectedNews.text}</p>
+                                                <h6>
+                                                    {selectedNews && new Date(selectedNews.updatedAt).toLocaleDateString('ru-RU')}
+                                                </h6>
+                                                <h4>{selectedNews.text}</h4>
                                             </Card>
                                         </div>
                                     ) : (

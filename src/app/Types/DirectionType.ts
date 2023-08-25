@@ -21,6 +21,7 @@ export type NewsT = {
     title: string,
     text: string,
     id: number,
+    updatedAt: string,
 }
 
 export type WaysT = {
