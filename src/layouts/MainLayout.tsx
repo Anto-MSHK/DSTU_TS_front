@@ -1,4 +1,4 @@
-import { Breadcrumb, Layout, theme } from "antd";
+import { Breadcrumb, Layout, Space, theme } from "antd";
 import React, { FC } from "react";
 import { Head } from "./Head";
 import { Nav } from "./Nav";
@@ -10,29 +10,36 @@ interface MainLayoutI {
   children: any;
   withNav?: boolean;
   withBacking?: boolean;
+  contentStyle?: React.CSSProperties,
+  layoutStyle?: React.CSSProperties,
 }
 export const MainLayout: FC<MainLayoutI> = ({
   children,
   withNav = false,
   withBacking = false,
+  contentStyle,
+  layoutStyle,
 }) => {
   const { token } = theme.useToken();
+  const style = contentStyle || { padding: "0 30px 0 30px" }
   return (
-    <Layout style={{ height: "100vh" }}>
-      <Head />
-      <Content style={{ padding: "0 30px 0 30px" }}>
-        <div style={{}} />
-        <Layout
-          style={{
-            padding: "20px 20px",
-            borderRadius: 10,
-          }}
-        >
-          {withNav && <Nav />}
-          <Content>{children}</Content>
-        </Layout>
-      </Content>
-      <Footer style={{ textAlign: "center" }}>Created by Random()</Footer>
-    </Layout>
+    <Space direction="vertical" style={{ width: '100%' }} size={[0, 48]}>
+      <Layout style={{minHeight: '100vh', height: "fit-content" }}>
+        <Head />
+        <Content style={style}>
+          <div style={{}} />
+          <Layout
+            style={layoutStyle || {
+              padding: "20px 20px",
+              borderRadius: 10,
+            }}
+          >
+            {withNav && <Nav />}
+            <Content>{children}</Content>
+          </Layout>
+        </Content>
+        <Footer style={{ textAlign: "center" }}>Created by Random()</Footer>
+      </Layout>
+    </Space>
   );
 };

@@ -1,0 +1,32 @@
+.content_wrapper{
+    height: fit-content;
+    width: 100%;
+   
+}
+
+.main_info_wrapper{
+    display: flex;
+    height: 100vh;
+    background-color: #4c59a9;
+    align-items: center;
+    justify-content: center;
+}
+.about_project_wrapper{
+    display: flex;
+    height: 100vh;
+    padding: 20px 50px;
+    justify-content: center;
+}
+.stats_info_wrapper{
+    display: flex;
+    height: 100vh;
+    padding: 20px 50px;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+}
+.news_wrapper{
+    display: flex;
+    height: 100vh;
+    padding: 20px 50px;
+}

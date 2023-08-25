@@ -47,14 +47,14 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<RegisterPage />} />
-          {/* <Route path="/" element={<HelloMessage />} /> */}
+          <Route path="/" element={<HelloMessage/>} />
           <Route
             path="/vacancy/:id"
             element={<VacancyWindow data={direction} withNav={true} />}
           />
           <Route path="/selectVacancy/:id" element={<SelectVacancy />} />
           <Route path="/quiz/:id" element={<VacancyQuiz />} />
-          <Route path="/" element={<TestsResult data={direction} isLoading = {isLoading} isError = {isError} />} />
+          <Route path="/tests" element={<TestsResult data={direction} isLoading = {isLoading} isError = {isError} />} />
         </Routes>
       );
     else
@@ -62,11 +62,11 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<RegisterPage />} />
-          {/* <Route
+          <Route
             path="/"
-            element={<HelloMessage isPlainUser user={currentUser} />}
-          /> */}
-          <Route path="/" element={<TestsResult data={userTests} isPlainUser isLoading = {userTestsLoading} isError = {userTestsError}/>} />
+            element={<HelloMessage/>}
+          />
+          <Route path="/tests" element={<TestsResult data={userTests} isPlainUser isLoading = {userTestsLoading} isError = {userTestsError}/>} />
           <Route path="/quiz/:id" element={<VacancyQuiz />} />
         </Routes>
       );

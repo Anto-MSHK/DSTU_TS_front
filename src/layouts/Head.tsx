@@ -30,6 +30,9 @@ export const Head = () => {
       <Link to={"/"} style={{ display: "flex", alignItems: "center" }}>
         <h1 style={{ color: "#167AFF", margin: 0 }}>ТЕСТ ДГТУ</h1>
       </Link>
+      <Link to={"/tests"}>
+      <h3 style={{ color: "#167AFF", margin: 0 }}>тесты</h3>
+      </Link>
 
       <div
         style={{
