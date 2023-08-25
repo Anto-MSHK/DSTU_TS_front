@@ -50,7 +50,7 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         skip: skipCriteriaReq,
     })
     const [selectedNews, setSelectedNews] = useState<NewsT | undefined>(undefined);
-    const { data: news, isLoading: isNewsLoading } = useGetNewsQuery(5);
+    const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
     const [newsTitle, setNewsTitle] = useState("");
     const [newsContent, setNewsContent] = useState("");
     const [isAddingNews, setIsAddingNews] = useState(false);
@@ -94,7 +94,7 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         if (selectedOption === 'Новости') {
             const selectedNewsId = e.key.replace('news', '');
             const selectedNewsItem = news && news.find(item => item.id && item.id.toString() === selectedNewsId);
-            setSelectedNews(selectedNewsItem); // Use null if news item is not found
+            setSelectedNews(selectedNewsItem);
         }
     };
 
@@ -139,17 +139,11 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                 title: newsTitle,
                 text: newsContent
             };
-
             const response = await addNewsMutation(newsData as NewsT);
-
-            // Handle success
             console.log("News added successfully:", response);
-
-            setIsAddingNews(false);
-            setNewsTitle("");
-            setNewsContent("");
+            setIsAddingNews(false)
+            setActiveElement('')
         } catch (error) {
-            // Handle error
             console.error("Error adding news:", error);
             message.error("An error occurred while adding news.");
         }
@@ -161,18 +155,12 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
     const handleDeleteNews = async () => {
         try {
             if (!selectedNews) {
-                return; // Make sure selectedNews is defined
+                return;
             }
-
             const response = await deleteNewsMutation(selectedNews);
-
-            // Handle success
             console.log("News deleted successfully:", response);
-
-            // You can also reset the selectedNews state here if needed
             setSelectedNews(undefined);
         } catch (error) {
-            // Handle error
             console.error("Error deleting news:", error);
             message.error("An error occurred while deleting news.");
         }
@@ -202,8 +190,7 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
 
     const handleOptionChange = (option: any) => {
         setSelectedOption(option);
-        // Здесь вы можете выполнить другие действия в зависимости от выбранной опции
-        // Например, отправка данных на сервер, загрузка соответствующего контента и так далее
+        setActiveElement('')
     };
 
     return (
@@ -250,22 +237,36 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                     )}
                 </div>
                 {
-                    selectedOption === 'Новости' && selectedNews ? (
+                    selectedOption === 'Новости' ? (
                             <div style={{display: 'flex', flexDirection: 'column', marginLeft: '10px', width: '100vw', height: '100vh'}}>
                                 <div style={{display: 'flex', justifyContent: 'flex-end'}}>
                                     <Button onClick={() => setIsAddingNews(true)}><PlusOutlined /> Добавить</Button>
                                 </div>
-                                <div style={{display: 'flex', gap: 10, flexDirection: 'column', marginTop: '10px'}}>
-                                    <Card title={selectedNews.title} extra={<Button type={'primary'} danger onClick={handleDeleteNews}><DeleteOutlined /></Button>}>
-                                        <p>{selectedNews.text}</p>
-                                    </Card>
-                                </div>
+                                {
+                                    selectedNews ? (
+                                        <div style={{display: 'flex', gap: 10, flexDirection: 'column', marginTop: '10px'}}>
+                                            <Card title={selectedNews.title} extra={<Button type={'primary'} danger onClick={handleDeleteNews}><DeleteOutlined /></Button>}>
+                                                <p>{selectedNews.text}</p>
+                                            </Card>
+                                        </div>
+                                    ) : (
+                                        <Result
+                                            status="info"
+                                            icon={<InfoOutlined />}
+                                            title={"Добро пожаловать"}
+                                            subTitle={
+                                                "Приветствуем вас на портале тестирования ДГТУ. Выберите интересующую вас новость в меню слева."
+                                            }
+                                            style={{ margin: "0 auto" }}
+                                        />
+                                    )
+                                }
                             </div>
                     ) :
                 activeElement ? (
                     <Card
                         title={test?.name}
-                        extra={test ? `${test.questions.length} вопросов` : ""}
+                        extra={test ? `${test?.questions?.length ?? 0} вопросов` : ""}
                         loading={isTestsLoading}
                         style={{
                             marginLeft: "20px",
