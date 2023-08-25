@@ -125,7 +125,6 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
         return getItem(item.title, `news${item.id}`);
     });
 
-// Функция для создания массива items только с заголовками
     function getNewsItems() {
         return newsItems;
     }

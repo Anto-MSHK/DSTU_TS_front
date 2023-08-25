@@ -1,7 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import customFetchBase from "../interceptor";
 import { NewsT } from "../Types/DirectionType";
-import { AddCriteriaBodyT } from "../Types/TestApiReqTypes";
 
 const token = localStorage.getItem("token");
 
