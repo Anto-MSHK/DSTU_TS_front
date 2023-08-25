@@ -248,7 +248,7 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
                                                 <h6>
                                                     {selectedNews && new Date(selectedNews.updatedAt).toLocaleDateString('ru-RU')}
                                                 </h6>
-                                                <h4>{selectedNews.text}</h4>
+                                                <p>{selectedNews.text}</p>
                                             </Card>
                                         </div>
                                     ) : (
