@@ -142,6 +142,8 @@ export const TestsResult: FC<VacancyWindowI> = ({ data, isLoading, isError, isPl
             console.log("News added successfully:", response);
             setIsAddingNews(false)
             setActiveElement('')
+            setNewsTitle('')
+            setNewsContent('')
         } catch (error) {
             console.error("Error adding news:", error);
             message.error("An error occurred while adding news.");
