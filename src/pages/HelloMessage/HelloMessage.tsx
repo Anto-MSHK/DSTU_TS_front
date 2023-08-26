@@ -3,30 +3,14 @@ import { MainLayout } from "../../layouts/MainLayout";
 import { Card, Col, Divider, Image, Row, Space, Typography } from "antd";
 import style from './HelloMessage.module.css'
 import dstuImage from '../../assets/image/DSTU.jpg'
-import Meta from "antd/es/card/Meta";
+import { useGetAllNewsQuery } from "../../app/services/NewsApi";
 const { Text, Title, Paragraph } = Typography
 
-const mockNews = [
-  {
-    title: 'Миллион ещё на подходе',
-    content: 'Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности',
-    createdAt: '25.08.2023'
-  },
-  {
-    title: '300 тысяч уже готово. Миллион ещё на подходе',
-    content: 'Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности, Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности',
-    createdAt: '25.08.2023'
-  },
-  {
-    title: '300 тысяч уже готово. Миллион ещё на подходе',
-    content: 'Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности, Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности, Повысят карьерную грамотность и обучатся навыкам и умениям проектной профориентационно значимой деятельности',
-    createdAt: '25.08.2023'
-  },
-]
 
 export const HelloMessage: FC = () => {
+  const {data: news} = useGetAllNewsQuery('')
   return (
-    <MainLayout withBacking contentStyle={{ padding: 0 }} layoutStyle={{ padding: 0 }}>
+    <MainLayout withBacking contentStyle={{ padding: 0 }} layoutStyle={{ padding: 0, }}>
       <Space direction="vertical" className={style.content_wrapper}>
         <Space className={style.main_info_wrapper}>
           <Paragraph style={{ display: 'flex', flexDirection: 'column' }}>
@@ -94,11 +78,12 @@ export const HelloMessage: FC = () => {
           <Title style={{ fontSize: '50px' }}>Новости</Title>
           <Row gutter={[32, 32]}>
             {
-              mockNews.length && mockNews.map((item) => {
+              news?.length && news.map((item) => {
                 return (
                   <Col span={8}>
                     <Card
                       bodyStyle={{ display: 'flex', flexDirection: 'column', padding: '15px', }}
+                      style={{boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",}}
                       bordered
                       cover={
                         <Image
@@ -108,8 +93,8 @@ export const HelloMessage: FC = () => {
                         />
                       }>
                       <Title style={{margin: '0'}} level={4}>{item.title}</Title>
-                      <Text style={{ marginTop: '20px', marginBottom: '10px'}}>{item.content}</Text>
-                      <Text style={{ margin: '0 0 0 auto' }}>{item.createdAt}</Text>
+                      <Text style={{ marginTop: '20px', marginBottom: '10px'}}>{item.text}</Text>
+                      <Text style={{ margin: '0 0 0 auto' }}>{new Date(item.createdAt).toLocaleDateString()}</Text>
                     </Card>
                   </Col>)
               })

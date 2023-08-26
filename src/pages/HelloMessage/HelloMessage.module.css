@@ -6,6 +6,7 @@
 
 .main_info_wrapper{
     display: flex;
+    min-height: 100vh;
     height: 100vh;
     background-color: #4c59a9;
     align-items: center;
@@ -13,6 +14,7 @@
 }
 .about_project_wrapper{
     display: flex;
+    min-height: 100vh;
     height: 100vh;
     padding: 20px 50px;
     justify-content: center;
@@ -27,6 +29,7 @@
 }
 .news_wrapper{
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
+    height: fit-content;
     padding: 20px 50px;
 }

@@ -38,7 +38,7 @@ export const MainLayout: FC<MainLayoutI> = ({
             <Content>{children}</Content>
           </Layout>
         </Content>
-        <Footer style={{ textAlign: "center" }}>Created by Random()</Footer>
+        <Footer style={{ textAlign: "center", marginTop: '100px' }}>Created by Random()</Footer>
       </Layout>
     </Space>
   );

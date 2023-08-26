@@ -5,12 +5,14 @@ import {directionApi} from "./services/DirectionApi";
 import {testsApi} from "./services/TestsApi";
 import {userAPI} from "./services/UserApi";
 import quizReducer from './slices/quizSlice'
+import { newsApi } from "./services/NewsApi";
 
 const rootReducer = combineReducers({
     [directionApi.reducerPath]: directionApi.reducer,
     [testsApi.reducerPath]: testsApi.reducer,
     [authAPI.reducerPath]: authAPI.reducer,
     [userAPI.reducerPath]: userAPI.reducer,
+    [newsApi.reducerPath]: newsApi.reducer,
     token: tokenReducer,
     quiz: quizReducer,
 });
@@ -22,6 +24,7 @@ export const store = configureStore({
             testsApi.middleware,
             authAPI.middleware,
             userAPI.middleware,
+            newsApi.middleware,
         ]),
 });
 
