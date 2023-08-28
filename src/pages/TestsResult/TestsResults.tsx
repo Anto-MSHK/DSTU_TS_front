@@ -400,4 +400,3 @@ function deleteNewsMutation(arg0: { id: number; }) {
 function addNewsMutation(arg0: { title: string; text: string; }) {
     throw new Error("Function not implemented.");
 }
-
