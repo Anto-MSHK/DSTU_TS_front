@@ -1,7 +1,7 @@
 import { Header } from "antd/es/layout/layout";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Avatar, theme } from "antd";
+import { Avatar, Button, theme } from "antd";
 import { useSelector } from "react-redux";
 import { getUser } from "../app/slices/authSlice";
 import { useGetUserQuery } from "../app/services/UserApi";
@@ -27,8 +27,8 @@ export const Head = () => {
         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <Link to={"/"} style={{ display: "flex", alignItems: "center" }}>
-        <h1 style={{ color: "#167AFF", margin: 0 }}>ТЕСТ ДГТУ</h1>
+      <Link to={"/tests"}>
+        <Button type="primary">Мои тесты</Button>
       </Link>
 
       <div
@@ -56,7 +56,7 @@ export const Head = () => {
                   top: 20,
                 }}
               >
-                {currentUser.role}
+                {currentUser.role === "user" ? "участник" : "админ"}
               </p>
             )}
           </div>
