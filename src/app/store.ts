@@ -15,6 +15,7 @@ const rootReducer = combineReducers({
     [newsApi.reducerPath]: newsApi.reducer,
     token: tokenReducer,
     quiz: quizReducer,
+    [newsApi.reducerPath]: newsApi.reducer,
 });
 export const store = configureStore({
     reducer: rootReducer,
@@ -25,6 +26,7 @@ export const store = configureStore({
             authAPI.middleware,
             userAPI.middleware,
             newsApi.middleware,
+
         ]),
 });
 

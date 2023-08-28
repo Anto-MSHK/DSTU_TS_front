@@ -10,16 +10,17 @@ import {
   Progress,
   Result,
   Row,
+  Segmented,
   Space,
   Tag,
   theme,
   Typography,
 } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { MainLayout } from "../../layouts/MainLayout";
-import { DirectionT, WaysT } from "../../app/Types/DirectionType";
+import { DirectionT, NewsT } from "../../app/Types/DirectionType";
 import { MenuProps } from "rc-menu";
-import { InfoOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, InfoOutlined, PlusOutlined } from "@ant-design/icons";
 import { useGetUserTestResultsByIdQuery } from "../../app/services/UserApi";
 import {
   useAddCriteriaMutation,
@@ -27,6 +28,11 @@ import {
   useGetTestCriteriasQuery,
 } from "../../app/services/TestsApi";
 import { ResultsT } from "../../app/Types/ResultsType";
+import {
+  useAddNewsMutation,
+  useDeleteNewsMutation,
+  useGetNewsQuery,
+} from "../../app/services/NewsApi";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -44,7 +50,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
   isError,
   isPlainUser = false,
 }) => {
-  const { id } = useParams<{ id: string }>();
   const [activeElement, setActiveElement] = useState("");
   const [skip, setSkip] = useState(true);
   const [skipCriteriaReq, setSkipCriteriaReq] = useState(true);
@@ -58,6 +63,13 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const { data: testCriterias } = useGetTestCriteriasQuery(activeElement, {
     skip: skipCriteriaReq,
   });
+  const [selectedNews, setSelectedNews] = useState<NewsT | undefined>(
+    undefined
+  );
+  const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
+  const [newsTitle, setNewsTitle] = useState("");
+  const [newsContent, setNewsContent] = useState("");
+  const [isAddingNews, setIsAddingNews] = useState(false);
 
   const resultChartData = testData?.criterias.map((item) => {
     return {
@@ -70,9 +82,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [criteriaName, setCriteriaName] = useState("");
-
-  const [dir, setDir] = useState("");
-  const [way, setWay] = useState("");
 
   function getItem(
     label: React.ReactNode,
@@ -90,33 +99,19 @@ export const TestsResult: FC<VacancyWindowI> = ({
     } as MenuItem;
   }
   const items: MenuProps["items"] = getMenuItmes();
-
   const onClick: MenuProps["onClick"] = (e) => {
     setSkip(false);
     setActiveElement(e.key);
     !isPlainUser && setSkipCriteriaReq(false);
-  };
 
-  useEffect(() => {
-    if (id) {
-      console.log("first");
-      if (!isPlainUser) {
-        let curWay: WaysT | undefined = undefined;
-        let curDir: DirectionT | undefined = (data as DirectionT[])?.find(
-          (dir) =>
-            dir.ways.find((way) => {
-              if (way.tests.find((t) => t.id + "" === id + "")) curWay = way;
-              return curWay;
-            })
-        );
-        if (curWay && curDir) {
-          setDir(`way${(curWay as any).id}`);
-          setWay(`dir${curDir.id}`);
-        }
-      }
-      onClick({ key: id } as any);
+    if (selectedOption === "Новости") {
+      const selectedNewsId = e.key.replace("news", "");
+      const selectedNewsItem =
+        news &&
+        news.find((item) => item.id && item.id.toString() === selectedNewsId);
+      setSelectedNews(selectedNewsItem);
     }
-  }, [data, id, isPlainUser, onClick]);
+  };
 
   function getMenuItmes() {
     if (!isPlainUser) {
@@ -138,6 +133,52 @@ export const TestsResult: FC<VacancyWindowI> = ({
     }
   }
 
+  const newsItems =
+    news &&
+    news.map((item) => {
+      return getItem(item.title, `news${item.id}`);
+    });
+
+  function getNewsItems() {
+    return newsItems;
+  }
+
+  const [addNewsMutation] = useAddNewsMutation();
+
+  const handleAddNews = async () => {
+    try {
+      const newsData: Partial<NewsT> = {
+        title: newsTitle,
+        text: newsContent,
+      };
+      const response = await addNewsMutation(newsData as NewsT);
+      console.log("News added successfully:", response);
+      setIsAddingNews(false);
+      setActiveElement("");
+      setNewsTitle("");
+      setNewsContent("");
+    } catch (error) {
+      console.error("Error adding news:", error);
+      message.error("An error occurred while adding news.");
+    }
+  };
+
+  const [deleteNewsMutation] = useDeleteNewsMutation();
+
+  const handleDeleteNews = async () => {
+    try {
+      if (!selectedNews) {
+        return;
+      }
+      const response = await deleteNewsMutation(selectedNews);
+      console.log("News deleted successfully:", response);
+      setSelectedNews(undefined);
+    } catch (error) {
+      console.error("Error deleting news:", error);
+      message.error("An error occurred while deleting news.");
+    }
+  };
+
   const handleAddCriteria = () => {
     if (!activeElement || !criteriaName) return;
     addCriteria({
@@ -156,6 +197,15 @@ export const TestsResult: FC<VacancyWindowI> = ({
           message.error("Ошибка добавления критерия!");
         }
       });
+  };
+
+  const [selectedOption, setSelectedOption] = useState(
+    !isPlainUser ? "Новости" : "Тесты"
+  ); // Изначально выбрана опция 'Новости'
+
+  const handleOptionChange = (option: any) => {
+    setSelectedOption(option);
+    setActiveElement("");
   };
 
   return (
@@ -178,24 +228,95 @@ export const TestsResult: FC<VacancyWindowI> = ({
             ></Empty>
           </Card>
         )}
-        {isLoading && !isError ? (
-          <Card loading={isLoading} style={{ width: "300px" }} />
-        ) : (
-          <Menu
-            onClick={onClick}
-            style={{
-              maxWidth: "300px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              borderRadius: 10,
-            }}
-            mode="inline"
-            items={items}
-            defaultSelectedKeys={[id as any]}
-            defaultOpenKeys={[dir, way]}
+        {isLoading && !isError && (
+          <Card
+            loading={isLoading}
+            style={{ width: "300px", height: "500px" }}
           />
         )}
-
-        {activeElement ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {!isPlainUser && (
+            <Segmented
+              options={["Новости", "Тесты"]}
+              onChange={handleOptionChange}
+            />
+          )}
+          {items?.length && (
+            <Menu
+              onClick={onClick}
+              style={{
+                width: "300px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                borderRadius: 10,
+                minHeight: 250,
+              }}
+              mode="inline"
+              items={selectedOption === "Новости" ? getNewsItems() : items}
+            />
+          )}
+        </div>
+        {selectedOption === "Новости" ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginLeft: "10px",
+              width: "100vw",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button onClick={() => setIsAddingNews(true)}>
+                <PlusOutlined /> Добавить
+              </Button>
+            </div>
+            {selectedNews ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  flexDirection: "column",
+                  marginTop: "10px",
+                }}
+              >
+                <Card
+                  title={selectedNews.title}
+                  style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
+                  extra={
+                    <Space>
+                      <h5 style={{ margin: 0 }}>
+                        {selectedNews &&
+                          new Date(selectedNews.updatedAt).toLocaleDateString(
+                            "ru-RU"
+                          )}
+                      </h5>{" "}
+                      <Button
+                        type={"primary"}
+                        danger
+                        onClick={handleDeleteNews}
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                    </Space>
+                  }
+                >
+                  <Text style={{ whiteSpace: "pre-line" }}>
+                    {selectedNews.text}
+                  </Text>
+                </Card>
+              </div>
+            ) : (
+              <Result
+                status="info"
+                icon={<InfoOutlined />}
+                title={"Добро пожаловать"}
+                subTitle={
+                  "Приветствуем вас на портале тестирования ДГТУ. Выберите интересующую вас новость в меню слева."
+                }
+                style={{ margin: "0 auto" }}
+              />
+            )}
+          </div>
+        ) : activeElement ? (
           <Card
             title={test?.name}
             extra={
@@ -309,6 +430,35 @@ export const TestsResult: FC<VacancyWindowI> = ({
           />
         )}
       </div>
+      <Modal
+        title="Добавление новости"
+        visible={isAddingNews}
+        onCancel={() => setIsAddingNews(false)}
+        cancelText={"Отменить"}
+        okText={"Добавить"}
+        onOk={handleAddNews}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <Input
+            value={newsTitle}
+            onChange={(e) => setNewsTitle(e.target.value)}
+            placeholder="Заголовок новости"
+          />
+          <Input.TextArea
+            value={newsContent}
+            onChange={(e) => setNewsContent(e.target.value)}
+            rows={4}
+            placeholder="Текст новости"
+          />
+        </div>
+      </Modal>
     </MainLayout>
   );
 };
+function deleteNewsMutation(arg0: { id: number }) {
+  throw new Error("Function not implemented.");
+}
+
+function addNewsMutation(arg0: { title: string; text: string }) {
+  throw new Error("Function not implemented.");
+}

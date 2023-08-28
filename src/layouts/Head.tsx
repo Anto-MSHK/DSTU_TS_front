@@ -27,9 +27,13 @@ export const Head = () => {
         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <Link to={"/tests"}>
-        <Button type="primary">Мои тесты</Button>
-      </Link>
+      {currentUser && (
+        <Link to={"/tests"}>
+          <Button type="primary">
+            {currentUser.role === "user" ? "Мои тесты" : "Кабинет"}
+          </Button>
+        </Link>
+      )}
 
       <div
         style={{
