@@ -19,27 +19,33 @@ import { TestsResult } from "./pages/TestsResult/TestsResults";
 const App: React.FC = () => {
   const select = useSelector(getToken());
   const userId = useSelector(getUser());
-   
-  const [isUser, setIsUser] = useState(true)
-  const [skip, setSkip] = useState(true)
+
+  const [isUser, setIsUser] = useState(true);
+  const [skip, setSkip] = useState(true);
   const { data: currentUser } = useGetUserQuery(userId as string);
-  const { data: direction, isLoading, isError } = useGetDirectionsQuery('', {
-    skip: isUser
+  const {
+    data: direction,
+    isLoading,
+    isError,
+  } = useGetDirectionsQuery("", {
+    skip: isUser,
   });
-  const { data: userTests, isLoading: userTestsLoading, isError: userTestsError } = useAllTestsQuery('',{
-    skip
+  const {
+    data: userTests,
+    isLoading: userTestsLoading,
+    isError: userTestsError,
+  } = useAllTestsQuery("", {
+    skip,
   });
 
- 
   useEffect(() => {
-    if (currentUser && currentUser.role === 'admin') {
-      setIsUser(false)
-    } 
-    if (currentUser && currentUser.role === 'user') {
-      setSkip(false)
+    if (currentUser && currentUser.role === "admin") {
+      setIsUser(false);
     }
-  }, [currentUser])
-
+    if (currentUser && currentUser.role === "user") {
+      setSkip(false);
+    }
+  }, [currentUser]);
 
   if (select)
     if (!isUser)
@@ -55,6 +61,27 @@ const App: React.FC = () => {
           <Route path="/selectVacancy/:id" element={<SelectVacancy />} />
           <Route path="/quiz/:id" element={<VacancyQuiz />} />
           <Route path="/tests" element={<TestsResult data={direction} isLoading = {isLoading} isError = {isError} />} />
+
+          <Route
+            path="/"
+            element={
+              <TestsResult
+                data={direction}
+                isLoading={isLoading}
+                isError={isError}
+              />
+            }
+          />
+          <Route
+            path="/:id"
+            element={
+              <TestsResult
+                data={direction}
+                isLoading={isLoading}
+                isError={isError}
+              />
+            }
+          />
         </Routes>
       );
     else
@@ -67,6 +94,26 @@ const App: React.FC = () => {
             element={<HelloMessage/>}
           />
           <Route path="/tests" element={<TestsResult data={userTests} isPlainUser isLoading = {userTestsLoading} isError = {userTestsError}/>} />
+            element={
+              <TestsResult
+                data={userTests}
+                isPlainUser
+                isLoading={userTestsLoading}
+                isError={userTestsError}
+              />
+            }
+          />
+          <Route
+            path="/:id"
+            element={
+              <TestsResult
+                data={userTests}
+                isPlainUser
+                isLoading={userTestsLoading}
+                isError={userTestsError}
+              />
+            }
+          />
           <Route path="/quiz/:id" element={<VacancyQuiz />} />
         </Routes>
       );
