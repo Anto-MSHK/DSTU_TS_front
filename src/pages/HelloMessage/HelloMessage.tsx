@@ -134,7 +134,7 @@ export const HelloMessage: FC = () => {
                       bordered
                       cover={
                         <Image
-                          style={{ maxHeight: "300px" }}
+                          style={{ maxHeight: "230px", objectFit: "cover" }}
                           alt="example"
                           src={dstuImage}
                         />
@@ -144,7 +144,7 @@ export const HelloMessage: FC = () => {
                         {item.title}
                       </Title>
                       <Text style={{ margin: "0 0 0 auto" }}>
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {new Date(item.updatedAt).toLocaleDateString()}
                       </Text>
                     </Card>
                   </Col>

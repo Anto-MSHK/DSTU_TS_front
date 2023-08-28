@@ -5,8 +5,8 @@
 
 .main_info_wrapper {
   display: flex;
-  min-height: 90vh;
-  height: 90vh;
+  min-height: 60vh;
+  height: 60vh;
   background-color: rgb(22, 122, 255);
   align-items: center;
   justify-content: center;
