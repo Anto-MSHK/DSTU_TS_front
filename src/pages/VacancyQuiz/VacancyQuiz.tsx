@@ -63,10 +63,14 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
   );
 
   const sendAnswers = useCallback(async () => {
-    await saveAnswers({
-      answers: quizAnswers,
-      testId: id,
-    }).unwrap();
+    if (
+      quizAnswers.length > 0 &&
+      quizAnswers.find((el) => el.answerIds.length > 0)
+    )
+      await saveAnswers({
+        answers: quizAnswers,
+        testId: id,
+      }).unwrap();
   }, [id, quizAnswers, saveAnswers]);
 
   useEffect(() => {
@@ -301,7 +305,7 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
             disabled={isLoading || answerCount < test.questions.length}
             style={{}}
           >
-            Отправить ответы
+            <Link to={`/${test.id}`}>Отправить ответы</Link>
           </Button>
         )}
       </div>
