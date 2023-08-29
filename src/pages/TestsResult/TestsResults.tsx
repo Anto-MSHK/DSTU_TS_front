@@ -98,15 +98,15 @@ export const TestsResult: FC<VacancyWindowI> = ({
   }
   const items: MenuProps["items"] = getMenuItmes();
   const onClick: MenuProps["onClick"] = (e) => {
-    setSkip(false);
-    setActiveElement(e.key);
-    !isPlainUser && setSkipCriteriaReq(false);
-
-    if (selectedOption === "Новости") {
+    if (selectedOption !== "Новости") {
+      setSkip(false);
+      setActiveElement(e.key);
+      !isPlainUser && setSkipCriteriaReq(false);
+    } else {
       const selectedNewsId = e.key.replace("news", "");
       const selectedNewsItem =
-        news &&
-        news.find((item) => item.id && item.id.toString() === selectedNewsId);
+          news &&
+          news.find((item) => item.id && item.id.toString() === selectedNewsId);
       setSelectedNews(selectedNewsItem);
     }
   };
