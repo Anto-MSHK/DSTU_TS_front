@@ -33,6 +33,7 @@ import {
   useDeleteNewsMutation,
   useGetNewsQuery,
 } from "../../app/services/NewsApi";
+import {NewsComponent} from "../../components/NewsComponent/NewsComponent";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -67,9 +68,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
     undefined
   );
   const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
-  const [newsTitle, setNewsTitle] = useState("");
-  const [newsContent, setNewsContent] = useState("");
-  const [isAddingNews, setIsAddingNews] = useState(false);
 
   const resultChartData = testData?.criterias.map((item) => {
     return {
@@ -143,41 +141,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
     return newsItems;
   }
 
-  const [addNewsMutation] = useAddNewsMutation();
 
-  const handleAddNews = async () => {
-    try {
-      const newsData: Partial<NewsT> = {
-        title: newsTitle,
-        text: newsContent,
-      };
-      const response = await addNewsMutation(newsData as NewsT);
-      console.log("News added successfully:", response);
-      setIsAddingNews(false);
-      setActiveElement("");
-      setNewsTitle("");
-      setNewsContent("");
-    } catch (error) {
-      console.error("Error adding news:", error);
-      message.error("An error occurred while adding news.");
-    }
-  };
-
-  const [deleteNewsMutation] = useDeleteNewsMutation();
-
-  const handleDeleteNews = async () => {
-    try {
-      if (!selectedNews) {
-        return;
-      }
-      const response = await deleteNewsMutation(selectedNews);
-      console.log("News deleted successfully:", response);
-      setSelectedNews(undefined);
-    } catch (error) {
-      console.error("Error deleting news:", error);
-      message.error("An error occurred while deleting news.");
-    }
-  };
 
   const handleAddCriteria = () => {
     if (!activeElement || !criteriaName) return;
@@ -199,9 +163,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
       });
   };
 
-  const [selectedOption, setSelectedOption] = useState(
-    !isPlainUser ? "Новости" : "Тесты"
-  ); // Изначально выбрана опция 'Новости'
+  const [selectedOption, setSelectedOption] = useState("Новости");
 
   const handleOptionChange = (option: any) => {
     setSelectedOption(option);
@@ -256,66 +218,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
           )}
         </div>
         {selectedOption === "Новости" ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginLeft: "10px",
-              width: "100vw",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button onClick={() => setIsAddingNews(true)}>
-                <PlusOutlined /> Добавить
-              </Button>
-            </div>
-            {selectedNews ? (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  flexDirection: "column",
-                  marginTop: "10px",
-                }}
-              >
-                <Card
-                  title={selectedNews.title}
-                  style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
-                  extra={
-                    <Space>
-                      <h5 style={{ margin: 0 }}>
-                        {selectedNews &&
-                          new Date(selectedNews.updatedAt).toLocaleDateString(
-                            "ru-RU"
-                          )}
-                      </h5>{" "}
-                      <Button
-                        type={"primary"}
-                        danger
-                        onClick={handleDeleteNews}
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                    </Space>
-                  }
-                >
-                  <Text style={{ whiteSpace: "pre-line" }}>
-                    {selectedNews.text}
-                  </Text>
-                </Card>
-              </div>
-            ) : (
-              <Result
-                status="info"
-                icon={<InfoOutlined />}
-                title={"Добро пожаловать"}
-                subTitle={
-                  "Приветствуем вас на портале тестирования ДГТУ. Выберите интересующую вас новость в меню слева."
-                }
-                style={{ margin: "0 auto" }}
-              />
-            )}
-          </div>
+          <NewsComponent selectedNews={selectedNews} setSelectedNews={setSelectedNews} setActiveElement={setActiveElement}/>
         ) : activeElement ? (
           <Card
             title={test?.name}
@@ -430,35 +333,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
           />
         )}
       </div>
-      <Modal
-        title="Добавление новости"
-        visible={isAddingNews}
-        onCancel={() => setIsAddingNews(false)}
-        cancelText={"Отменить"}
-        okText={"Добавить"}
-        onOk={handleAddNews}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <Input
-            value={newsTitle}
-            onChange={(e) => setNewsTitle(e.target.value)}
-            placeholder="Заголовок новости"
-          />
-          <Input.TextArea
-            value={newsContent}
-            onChange={(e) => setNewsContent(e.target.value)}
-            rows={4}
-            placeholder="Текст новости"
-          />
-        </div>
-      </Modal>
     </MainLayout>
   );
 };
-function deleteNewsMutation(arg0: { id: number }) {
-  throw new Error("Function not implemented.");
-}
-
-function addNewsMutation(arg0: { title: string; text: string }) {
-  throw new Error("Function not implemented.");
-}
