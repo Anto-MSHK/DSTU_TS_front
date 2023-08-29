@@ -163,7 +163,9 @@ export const TestsResult: FC<VacancyWindowI> = ({
       });
   };
 
-  const [selectedOption, setSelectedOption] = useState("Новости");
+  const [selectedOption, setSelectedOption] = useState(
+      !isPlainUser ? "Новости" : "Тесты"
+  );
 
   const handleOptionChange = (option: any) => {
     setSelectedOption(option);
