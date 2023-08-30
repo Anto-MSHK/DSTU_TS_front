@@ -194,9 +194,9 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
             </div>
           ) : (
             quiz.type === "single" && (
-              <div id={`part-${index}`}>
+              <div id={`part-${quiz?.id}`}>
                 <QuizQuestion
-                  index={index + 1}
+                  index={quiz?.id}
                   correctAnswer={
                     quiz.answers.find((answer) => answer.isAnswer)?.id + "" ||
                     ""
@@ -258,7 +258,12 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
               </h3>
             </div>
             {test ? (
-              <Sider style={{ background: token.colorBgContainer }} width={250}>
+              <Sider
+                style={{
+                  background: token.colorBgContainer,
+                }}
+                width={250}
+              >
                 <Anchor>
                   {test?.questions.map((ques, index) => {
                     const curQuest = quizAnswers.find(
@@ -270,8 +275,8 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
                         : "black";
                     return (
                       <Anchor.Link
-                        key={`part-${index}`}
-                        href={`#part-${index}`}
+                        key={`part-${ques?.id}`}
+                        href={`#part-${ques?.id}`}
                         title={
                           <span style={{ color: textColor }}>
                             {`${index + 1}. ${ques.text}`}

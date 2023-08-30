@@ -3,6 +3,7 @@ import React, { FC } from "react";
 import { Head } from "./Head";
 import { Nav } from "./Nav";
 import { data } from "../app/dataExample";
+import { useLocation } from "react-router-dom";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -10,8 +11,8 @@ interface MainLayoutI {
   children: any;
   withNav?: boolean;
   withBacking?: boolean;
-  contentStyle?: React.CSSProperties,
-  layoutStyle?: React.CSSProperties,
+  contentStyle?: React.CSSProperties;
+  layoutStyle?: React.CSSProperties;
 }
 export const MainLayout: FC<MainLayoutI> = ({
   children,
@@ -21,24 +22,30 @@ export const MainLayout: FC<MainLayoutI> = ({
   layoutStyle,
 }) => {
   const { token } = theme.useToken();
-  const style = contentStyle || { padding: "0 30px 0 30px" }
+  const style = contentStyle || { padding: "0 30px 0 30px" };
+  const location = useLocation();
+
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size={[0, 48]}>
-      <Layout style={{minHeight: '100vh', height: "fit-content" }}>
+    <Space direction="vertical" style={{ width: "100%" }} size={[0, 48]}>
+      <Layout style={{ minHeight: "100vh", height: "fit-content" }}>
         <Head />
         <Content style={style}>
           <div style={{}} />
           <Layout
-            style={layoutStyle || {
-              padding: "20px 20px",
-              borderRadius: 10,
-            }}
+            style={
+              layoutStyle || {
+                padding: "20px 20px",
+                borderRadius: 10,
+              }
+            }
           >
             {withNav && <Nav />}
             <Content>{children}</Content>
           </Layout>
         </Content>
-        <Footer style={{ textAlign: "center", marginTop: '100px' }}>Created by Random()</Footer>
+        {!location.pathname.includes("quiz") && (
+          <Footer style={{ textAlign: "center" }}>Created by Random()</Footer>
+        )}
       </Layout>
     </Space>
   );

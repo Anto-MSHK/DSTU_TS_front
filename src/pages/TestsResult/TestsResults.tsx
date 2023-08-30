@@ -2,6 +2,7 @@ import React, { FC, useEffect, useState } from "react";
 import {
   Button,
   Card,
+  Divider,
   Empty,
   Input,
   Menu,
@@ -12,6 +13,7 @@ import {
   Row,
   Segmented,
   Space,
+  Spin,
   Tag,
   theme,
   Typography,
@@ -54,13 +56,19 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const [activeElement, setActiveElement] = useState("");
   const [skip, setSkip] = useState(true);
   const [skipCriteriaReq, setSkipCriteriaReq] = useState(true);
-  const { data: testData, isLoading: isTestsLoading } =
-    useGetUserTestResultsByIdQuery(activeElement, {
-      skip,
-    });
-  const { data: test } = useGetTestByIdQuery(activeElement, {
+  const {
+    data: testData,
+    isLoading: isTestsLoading,
+    isFetching: isTestsFetching,
+  } = useGetUserTestResultsByIdQuery(activeElement, {
     skip,
   });
+  const { data: test, isFetching: isFetTest } = useGetTestByIdQuery(
+    activeElement,
+    {
+      skip,
+    }
+  );
   const { data: testCriterias } = useGetTestCriteriasQuery(activeElement, {
     skip: skipCriteriaReq,
   });
@@ -70,10 +78,24 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
 
   const resultChartData = testData?.criterias.map((item) => {
+    if (test?.questions) {
+      return {
+        result: item.result,
+        name: item.criteria.name,
+        id: item.criteria.id,
+      };
+    } else
+      return {
+        result: 0,
+        name: item.criteria.name,
+        id: item.criteria.id,
+      };
+  });
+  const resultGroupData = testData?.groups.map((item) => {
     return {
-      result: item.result * 10,
-      name: item.criteria.name,
-      id: item.criteria.id,
+      result: item.count,
+      name: item.group,
+      id: item.group,
     };
   });
   const [addCriteria] = useAddCriteriaMutation();
@@ -164,8 +186,12 @@ export const TestsResult: FC<VacancyWindowI> = ({
   };
 
   const [selectedOption, setSelectedOption] = useState(
-      !isPlainUser ? "Новости" : "Тесты"
+    !isPlainUser ? "Новости" : "Тесты"
   );
+
+  useEffect(() => {
+    setSelectedOption(!isPlainUser ? "Новости" : "Тесты");
+  }, [isPlainUser]);
 
   const handleOptionChange = (option: any) => {
     setSelectedOption(option);
@@ -192,12 +218,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
             ></Empty>
           </Card>
         )}
-        {isLoading && !isError && (
-          <Card
-            loading={isLoading}
-            style={{ width: "300px", height: "500px" }}
-          />
-        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {!isPlainUser && (
             <Segmented
@@ -205,7 +226,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               onChange={handleOptionChange}
             />
           )}
-          {items?.length && (
+          {items?.length ? (
             <Menu
               onClick={onClick}
               style={{
@@ -217,11 +238,74 @@ export const TestsResult: FC<VacancyWindowI> = ({
               mode="inline"
               items={selectedOption === "Новости" ? getNewsItems() : items}
             />
+          ) : (
+            <Card loading={isLoading} style={{ width: "300px" }}>
+              <Spin size="large" style={{ width: "100%" }} />
+            </Card>
           )}
         </div>
         {selectedOption === "Новости" ? (
-          <NewsComponent selectedNews={selectedNews} setSelectedNews={setSelectedNews} setActiveElement={setActiveElement}/>
-        ) : activeElement ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginLeft: "10px",
+              width: "100vw",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button onClick={() => setIsAddingNews(true)}>
+                <PlusOutlined /> Добавить
+              </Button>
+            </div>
+            {selectedNews ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  flexDirection: "column",
+                  marginTop: "10px",
+                }}
+              >
+                <Card
+                  title={selectedNews.title}
+                  style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
+                  extra={
+                    <Space>
+                      <h5 style={{ margin: 0 }}>
+                        {selectedNews &&
+                          new Date(selectedNews.updatedAt).toLocaleDateString(
+                            "ru-RU"
+                          )}
+                      </h5>{" "}
+                      <Button
+                        type={"primary"}
+                        danger
+                        onClick={handleDeleteNews}
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                    </Space>
+                  }
+                >
+                  <Text style={{ whiteSpace: "pre-line" }}>
+                    {selectedNews.text}
+                  </Text>
+                </Card>
+              </div>
+            ) : (
+              <Result
+                status="info"
+                icon={<InfoOutlined />}
+                title={"Добро пожаловать"}
+                subTitle={
+                  "Приветствуем вас на портале тестирования ДГТУ. Выберите интересующую вас новость в меню слева."
+                }
+                style={{ margin: "0 auto" }}
+              />
+            )}
+          </div>
+        ) : activeElement && !isTestsLoading && !isFetTest ? (
           <Card
             title={test?.name}
             extra={
@@ -247,26 +331,100 @@ export const TestsResult: FC<VacancyWindowI> = ({
             }}
           >
             <Text strong>Описание: {test?.desc}</Text>
-            {resultChartData?.length && isPlainUser ? (
-              <Space size={100} wrap style={{ marginTop: "50px" }}>
-                {resultChartData.map((item) => {
-                  return (
-                    <div
-                      key={item.id}
-                      style={{ display: "flex", flexDirection: "column" }}
-                    >
-                      <Progress
-                        type="circle"
-                        percent={item.result}
-                        strokeWidth={10}
-                      />
-                      <Text>{item.name}</Text>
-                    </div>
-                  );
-                })}
-              </Space>
-            ) : (
-              ""
+
+            {testData && testData?.logs && (
+              <>
+                <h4 style={{ color: "#1677FF", margin: "15px 0 -10px 0" }}>
+                  Результаты:
+                </h4>
+                <Divider
+                  orientation="left"
+                  style={{
+                    margin: "15px 0 15px 0",
+                    backgroundColor: "#1677FF",
+                  }}
+                ></Divider>
+                {test &&
+                !test?.meta?.decryptGroups &&
+                testData?.curInterpretation ? (
+                  <>
+                    <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
+                      {testData?.byFormula} б. -{" "}
+                      {testData?.curInterpretation.text}
+                    </h1>
+                  </>
+                ) : !testData && isTestsLoading ? (
+                  <Spin />
+                ) : (
+                  testData && !testData?.curInterpretation && <></>
+                )}
+
+                {!test?.meta?.decryptGroups &&
+                !isTestsLoading &&
+                !testData?.curInterpretation &&
+                resultChartData?.length &&
+                isPlainUser ? (
+                  <Space
+                    style={{
+                      width: "100%",
+                      justifyContent: "space-between",
+                      marginTop: -10,
+                      gap: 25,
+                    }}
+                    align="center"
+                  >
+                    {resultChartData
+                      .sort((a, b) => b.result - a.result)
+                      .map((item) => {
+                        return (
+                          <Result
+                            title={item.result}
+                            style={{ padding: 0 }}
+                            icon={null}
+                            subTitle={item.name}
+                          />
+                        );
+                      })}
+                  </Space>
+                ) : resultGroupData?.length && isPlainUser ? (
+                  <Space
+                    style={{
+                      width: "100%",
+                      justifyContent: "start",
+                      gap: 25,
+                      marginTop: -10,
+                    }}
+                    align="center"
+                  >
+                    {test?.meta?.decryptGroups &&
+                      resultGroupData
+                        .sort((a, b) => b.result - a.result)
+                        .map((item) => {
+                          return (
+                            <Result
+                              title={item.result}
+                              style={{ padding: 0 }}
+                              icon={null}
+                              subTitle={
+                                test?.meta.decryptGroups.find(
+                                  (gr) => gr.name === item.name
+                                )?.text
+                              }
+                            />
+                          );
+                        })}
+                  </Space>
+                ) : (
+                  "Вы ещё не прошли этот тест"
+                )}
+
+                <Divider
+                  style={{
+                    backgroundColor: "#1677FF",
+                    margin: "15px 0 0 0",
+                  }}
+                />
+              </>
             )}
             {!isPlainUser && (
               <div style={{ marginTop: "25px" }}>
@@ -323,7 +481,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               </div>
             )}
           </Card>
-        ) : (
+        ) : !isTestsLoading && !isFetTest && !isTestsFetching ? (
           <Result
             status="info"
             icon={<InfoOutlined />}
@@ -333,6 +491,8 @@ export const TestsResult: FC<VacancyWindowI> = ({
             }
             style={{ margin: "0 auto" }}
           />
+        ) : (
+          <Spin size="large" style={{ width: "100%" }} />
         )}
       </div>
     </MainLayout>

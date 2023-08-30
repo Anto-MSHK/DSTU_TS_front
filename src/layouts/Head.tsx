@@ -1,6 +1,6 @@
 import { Header } from "antd/es/layout/layout";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Avatar, Button, theme } from "antd";
 import { useSelector } from "react-redux";
 import { getUser } from "../app/slices/authSlice";
@@ -15,6 +15,7 @@ export const Head = () => {
     isLoading,
   } = useGetUserQuery(userId as string);
   const { token } = theme.useToken();
+  const location = useLocation();
 
   return (
     <Header
@@ -28,9 +29,14 @@ export const Head = () => {
       }}
     >
       {currentUser && (
-        <Link to={"/tests"}>
+        <Link to={location.pathname.includes("tests") ? "/" : "/tests"}>
           <Button type="primary">
-            {currentUser.role === "user" ? "Мои тесты" : "Кабинет"}
+            {!location.pathname.includes("tests") && currentUser.role === "user"
+              ? "Мои тесты"
+              : !location.pathname.includes("tests") &&
+                currentUser.role === "admin"
+              ? "Кабинет"
+              : "Главная"}
           </Button>
         </Link>
       )}
@@ -44,8 +50,22 @@ export const Head = () => {
           margin: 0,
         }}
       >
-        {isLoading ? (
-          <>Loading...</>
+        {isLoading || (!isLoading && !currentUser) ? (
+          <Link
+            to={
+              !location.pathname.includes("login") &&
+              !location.pathname.includes("register")
+                ? "/login"
+                : "/"
+            }
+          >
+            <Button type="primary">
+              {!location.pathname.includes("login") &&
+              !location.pathname.includes("register")
+                ? "Вход / Регистрация"
+                : "На главную"}
+            </Button>
+          </Link>
         ) : (
           <div>
             {currentUser && (
