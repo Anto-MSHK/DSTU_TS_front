@@ -44,9 +44,7 @@ export const MainLayout: FC<MainLayoutI> = ({
           </Layout>
         </Content>
         {!location.pathname.includes("quiz") && (
-          <Footer style={{ textAlign: "center", position: "absolute" }}>
-            Created by Random()
-          </Footer>
+          <Footer style={{ textAlign: "center" }}>Created by Random()</Footer>
         )}
       </Layout>
     </Space>

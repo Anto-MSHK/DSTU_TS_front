@@ -223,7 +223,11 @@ export const TestsResult: FC<VacancyWindowI> = ({
 
   const [selectedOption, setSelectedOption] = useState(
     !isPlainUser ? "Новости" : "Тесты"
-  ); // Изначально выбрана опция 'Новости'
+  );
+
+  useEffect(() => {
+    setSelectedOption(!isPlainUser ? "Новости" : "Тесты");
+  }, [isPlainUser]);
 
   const handleOptionChange = (option: any) => {
     setSelectedOption(option);
@@ -250,12 +254,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
             ></Empty>
           </Card>
         )}
-        {isLoading && !isError && (
-          <Card
-            loading={isLoading}
-            style={{ width: "300px", height: "500px" }}
-          />
-        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {!isPlainUser && (
             <Segmented
@@ -263,7 +262,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               onChange={handleOptionChange}
             />
           )}
-          {items?.length && (
+          {items?.length ? (
             <Menu
               onClick={onClick}
               style={{
@@ -275,6 +274,10 @@ export const TestsResult: FC<VacancyWindowI> = ({
               mode="inline"
               items={selectedOption === "Новости" ? getNewsItems() : items}
             />
+          ) : (
+            <Card loading={isLoading} style={{ width: "300px" }}>
+              <Spin size="large" style={{ width: "100%" }} />
+            </Card>
           )}
         </div>
         {selectedOption === "Новости" ? (
@@ -365,97 +368,100 @@ export const TestsResult: FC<VacancyWindowI> = ({
           >
             <Text strong>Описание: {test?.desc}</Text>
 
-            <h4 style={{ color: "#1677FF", margin: "15px 0 -10px 0" }}>
-              Результаты:
-            </h4>
-            <Divider
-              orientation="left"
-              style={{
-                margin: "15px 0 15px 0",
-                backgroundColor: "#1677FF",
-              }}
-            ></Divider>
-            {test &&
-            !test?.meta?.decryptGroups &&
-            testData?.curInterpretation ? (
+            {testData && testData?.logs && (
               <>
-                <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
-                  {testData?.byFormula} б. - {testData?.curInterpretation.text}
-                </h1>
-              </>
-            ) : !testData || isTestsLoading ? (
-              <Spin />
-            ) : (
-              testData && !testData?.curInterpretation && <></>
-            )}
+                <h4 style={{ color: "#1677FF", margin: "15px 0 -10px 0" }}>
+                  Результаты:
+                </h4>
+                <Divider
+                  orientation="left"
+                  style={{
+                    margin: "15px 0 15px 0",
+                    backgroundColor: "#1677FF",
+                  }}
+                ></Divider>
+                {test &&
+                !test?.meta?.decryptGroups &&
+                testData?.curInterpretation ? (
+                  <>
+                    <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
+                      {testData?.byFormula} б. -{" "}
+                      {testData?.curInterpretation.text}
+                    </h1>
+                  </>
+                ) : !testData && isTestsLoading ? (
+                  <Spin />
+                ) : (
+                  testData && !testData?.curInterpretation && <></>
+                )}
 
-            {!test?.meta?.decryptGroups &&
-            !isTestsLoading &&
-            !testData?.curInterpretation &&
-            resultChartData?.length &&
-            isPlainUser ? (
-              <Space
-                style={{
-                  width: "100%",
-                  justifyContent: "space-between",
-                  marginTop: -10,
-                  gap: 25,
-                }}
-                align="center"
-              >
-                {resultChartData
-                  .sort((a, b) => b.result - a.result)
-                  .map((item) => {
-                    return (
-                      <Result
-                        title={item.result}
-                        style={{ padding: 0 }}
-                        icon={null}
-                        subTitle={item.name}
-                      />
-                    );
-                  })}
-              </Space>
-            ) : (
-              ""
+                {!test?.meta?.decryptGroups &&
+                !isTestsLoading &&
+                !testData?.curInterpretation &&
+                resultChartData?.length &&
+                isPlainUser ? (
+                  <Space
+                    style={{
+                      width: "100%",
+                      justifyContent: "space-between",
+                      marginTop: -10,
+                      gap: 25,
+                    }}
+                    align="center"
+                  >
+                    {resultChartData
+                      .sort((a, b) => b.result - a.result)
+                      .map((item) => {
+                        return (
+                          <Result
+                            title={item.result}
+                            style={{ padding: 0 }}
+                            icon={null}
+                            subTitle={item.name}
+                          />
+                        );
+                      })}
+                  </Space>
+                ) : resultGroupData?.length && isPlainUser ? (
+                  <Space
+                    style={{
+                      width: "100%",
+                      justifyContent: "start",
+                      gap: 25,
+                      marginTop: -10,
+                    }}
+                    align="center"
+                  >
+                    {test?.meta?.decryptGroups &&
+                      resultGroupData
+                        .sort((a, b) => b.result - a.result)
+                        .map((item) => {
+                          return (
+                            <Result
+                              title={item.result}
+                              style={{ padding: 0 }}
+                              icon={null}
+                              subTitle={
+                                test?.meta.decryptGroups.find(
+                                  (gr) => gr.name === item.name
+                                )?.text
+                              }
+                            />
+                          );
+                        })}
+                  </Space>
+                ) : (
+                  "Вы ещё не прошли этот тест"
+                )}
+
+                <Divider
+                  style={{
+                    backgroundColor: "#1677FF",
+                    margin: "15px 0 0 0",
+                  }}
+                />
+              </>
             )}
-            {resultGroupData?.length && isPlainUser ? (
-              <Space
-                style={{
-                  width: "100%",
-                  justifyContent: "start",
-                  gap: 25,
-                  marginTop: -10,
-                }}
-                align="center"
-              >
-                {test?.meta?.decryptGroups &&
-                  resultGroupData
-                    .sort((a, b) => b.result - a.result)
-                    .map((item) => {
-                      return (
-                        <Result
-                          title={item.result}
-                          style={{ padding: 0 }}
-                          icon={null}
-                          subTitle={
-                            test?.meta.decryptGroups.find(
-                              (gr) => gr.name === item.name
-                            )?.text
-                          }
-                        />
-                      );
-                    })}
-              </Space>
-            ) : (
-              ""
-            )}
-            <Divider
-              style={{
-                backgroundColor: "#1677FF",
-                margin: "15px 0 0 0",
-              }}
-            />
             {!isPlainUser && (
               <div style={{ marginTop: "25px" }}>
                 <Text strong>Критерии теста:</Text>
