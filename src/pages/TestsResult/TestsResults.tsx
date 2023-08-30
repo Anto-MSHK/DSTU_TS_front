@@ -365,12 +365,16 @@ export const TestsResult: FC<VacancyWindowI> = ({
           >
             <Text strong>Описание: {test?.desc}</Text>
 
+            <h4 style={{ color: "#1677FF", margin: "15px 0 -10px 0" }}>
+              Результаты:
+            </h4>
             <Divider
+              orientation="left"
               style={{
-                backgroundColor: "#1677FF",
                 margin: "15px 0 15px 0",
+                backgroundColor: "#1677FF",
               }}
-            />
+            ></Divider>
             {test &&
             !test?.meta?.decryptGroups &&
             testData?.curInterpretation ? (
@@ -449,7 +453,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
             <Divider
               style={{
                 backgroundColor: "#1677FF",
-                margin: "15px 0 15px 0",
+                margin: "15px 0 0 0",
               }}
             />
             {!isPlainUser && (
@@ -507,7 +511,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               </div>
             )}
           </Card>
-        ) : !isTestsLoading && !isFetTest ? (
+        ) : !isTestsLoading && !isFetTest && !isTestsFetching ? (
           <Result
             status="info"
             icon={<InfoOutlined />}
