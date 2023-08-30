@@ -17,6 +17,11 @@ export const testsApi = createApi({
         url: `/tests`,
       }),
     }),
+    getAllTests: builder.query<TestT[], void>({
+      query: () => ({
+        url: `/tests/all`,
+      }),
+    }),
     getTestById: builder.query<TestT, string>({
       query: (id: string) => ({
         url: `/tests/${id}`,
@@ -27,16 +32,16 @@ export const testsApi = createApi({
         url: `/tests/${id}/criteria`,
       }),
     }),
-    addCriteria: builder.mutation<null, AddCriteriaBodyT >({
-      query: ({id, name}) => ({
+    addCriteria: builder.mutation<null, AddCriteriaBodyT>({
+      query: ({ id, name }) => ({
         url: `/tests/${id}/add-criteria`,
         method: "POST",
         body: {
           name,
         },
-      })
+      }),
     }),
-     saveAnswers: builder.mutation<
+    saveAnswers: builder.mutation<
       void,
       { answers: Answer[]; testId: string | undefined }
     >({
@@ -51,4 +56,11 @@ export const testsApi = createApi({
   }),
 });
 
-export const { useGetTestsQuery, useGetTestByIdQuery, useAddCriteriaMutation, useGetTestCriteriasQuery, useSaveAnswersMutation} = testsApi;
+export const {
+  useGetTestsQuery,
+  useGetTestByIdQuery,
+  useAddCriteriaMutation,
+  useGetTestCriteriasQuery,
+  useSaveAnswersMutation,
+  useGetAllTestsQuery,
+} = testsApi;

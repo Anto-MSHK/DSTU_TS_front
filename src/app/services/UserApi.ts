@@ -34,12 +34,12 @@ export const userAPI = createApi({
       }),
     }),
     getUserTestResultsById: build.query<ResultByIdT, string>({
-      query:(id: string) => ({
+      query: (id: string) => ({
         url: `users/result/${id}`,
         method: "GET",
-  
-      })
-    })
+        providesTags: () => ["Results"],
+      }),
+    }),
   }),
 });
 

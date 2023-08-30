@@ -72,7 +72,7 @@ const App: React.FC = () => {
           />
 
           <Route
-            path="/"
+            path="/tests/"
             element={
               <TestsResult
                 data={direction}
@@ -82,7 +82,7 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/:id"
+            path="/tests/:id"
             element={
               <TestsResult
                 data={direction}
@@ -110,8 +110,9 @@ const App: React.FC = () => {
               />
             }
           />
+
           <Route
-            path="/:id"
+            path="/tests/:id"
             element={
               <TestsResult
                 data={userTests}

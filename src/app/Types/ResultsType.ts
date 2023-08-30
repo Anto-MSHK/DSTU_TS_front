@@ -1,3 +1,5 @@
+import { AnswerT } from "./DirectionType";
+
 export type ResultsT = {
   testInfo: {
     id: number;
@@ -41,6 +43,7 @@ export type AnswerLogT = {
   id: number;
   text: string;
   criteria: CriteriaT;
+  answers: AnswerT[];
 };
 
 export type ResultByIdT = {
@@ -57,7 +60,7 @@ export type ResultByIdT = {
       "result": 12
     }
   ], */
-  logs: AnswerLogT;
+  logs: AnswerLogT[];
   byFormula: number;
   curInterpretation: {
     value: string[];

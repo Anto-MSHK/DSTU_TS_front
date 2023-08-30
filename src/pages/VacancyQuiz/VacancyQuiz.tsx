@@ -14,7 +14,7 @@ import {
   Spin,
 } from "antd";
 import styles from "./VacancyQuiz.module.css";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import OpenQuizQuestion from "../../components/OpenQuizQuestion/OpenQuizQuestion";
 import { MultipleQuizQuestion } from "../../components/MultipleQuizQuestion/MultipleQuizQuestion";
 import QuizQuestion from "../../components/QuizQuestion/QuizQuestion";
@@ -25,7 +25,7 @@ import {
 } from "@ant-design/icons";
 import { useGetTestByIdQuery } from "../../app/services/TestsApi";
 import { MainLayout } from "../../layouts/MainLayout";
-import { useGetUsersQuery } from "../../app/services/UserApi";
+import { useGetUsersQuery, userAPI } from "../../app/services/UserApi";
 import { useSaveAnswersMutation } from "../../app/services/TestsApi";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { getMarkedAnswer } from "../../app/slices/quizSlice";
@@ -61,17 +61,25 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
         .filter((el) => el !== false).length,
     [quizAnswers]
   );
-
-  const sendAnswers = useCallback(async () => {
-    if (
-      quizAnswers.length > 0 &&
-      quizAnswers.find((el) => el.answerIds.length > 0)
-    )
-      await saveAnswers({
-        answers: quizAnswers,
-        testId: id,
-      }).unwrap();
-  }, [id, quizAnswers, saveAnswers]);
+  const navigate = useNavigate();
+  const sendAnswers = useCallback(
+    async (isSubmit?: boolean) => {
+      if (
+        quizAnswers.length > 0 &&
+        quizAnswers.find((el) => el.answerIds.length > 0)
+      )
+        await saveAnswers({
+          answers: quizAnswers,
+          testId: id,
+        })
+          .unwrap()
+          .then(() => {
+            dispatch(userAPI.util.invalidateTags(["Results"]));
+            if (isSubmit) navigate("/tests");
+          });
+    },
+    [id, quizAnswers, saveAnswers]
+  );
 
   useEffect(() => {
     sendAnswers();
@@ -306,11 +314,11 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
           <Button
             size="large"
             type="primary"
-            onClick={sendAnswers}
+            onClick={() => sendAnswers(true)}
             disabled={isLoading || answerCount < test.questions.length}
             style={{}}
           >
-            <Link to={`/${test.id}`}>Отправить ответы</Link>
+            Отправить ответы
           </Button>
         )}
       </div>

@@ -18,7 +18,7 @@ import {
   theme,
   Typography,
 } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { MainLayout } from "../../layouts/MainLayout";
 import { DirectionT, NewsT } from "../../app/Types/DirectionType";
 import { MenuProps } from "rc-menu";
@@ -26,6 +26,7 @@ import { DeleteOutlined, InfoOutlined, PlusOutlined } from "@ant-design/icons";
 import { useGetUserTestResultsByIdQuery } from "../../app/services/UserApi";
 import {
   useAddCriteriaMutation,
+  useGetAllTestsQuery,
   useGetTestByIdQuery,
   useGetTestCriteriasQuery,
 } from "../../app/services/TestsApi";
@@ -35,7 +36,7 @@ import {
   useDeleteNewsMutation,
   useGetNewsQuery,
 } from "../../app/services/NewsApi";
-import {NewsComponent} from "../../components/NewsComponent/NewsComponent";
+import { NewsComponent } from "../../components/NewsComponent/NewsComponent";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -53,6 +54,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
   isError,
   isPlainUser = false,
 }) => {
+  const { id } = useParams();
   const [activeElement, setActiveElement] = useState("");
   const [skip, setSkip] = useState(true);
   const [skipCriteriaReq, setSkipCriteriaReq] = useState(true);
@@ -63,6 +65,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
   } = useGetUserTestResultsByIdQuery(activeElement, {
     skip,
   });
+  const { data: allTests, isLoading: isLoadingTests } = useGetAllTestsQuery();
   const { data: test, isFetching: isFetTest } = useGetTestByIdQuery(
     activeElement,
     {
@@ -127,8 +130,8 @@ export const TestsResult: FC<VacancyWindowI> = ({
     } else {
       const selectedNewsId = e.key.replace("news", "");
       const selectedNewsItem =
-          news &&
-          news.find((item) => item.id && item.id.toString() === selectedNewsId);
+        news &&
+        news.find((item) => item.id && item.id.toString() === selectedNewsId);
       setSelectedNews(selectedNewsItem);
     }
   };
@@ -146,9 +149,9 @@ export const TestsResult: FC<VacancyWindowI> = ({
         return getItem(item.title, `dir${item.id}`, ways);
       });
     } else {
-      let userData: ResultsT[] = data as ResultsT[];
+      let userData = allTests;
       return userData?.map((item) => {
-        return getItem(item.testInfo.name, item.testInfo.id);
+        return getItem(item.name, item.id);
       });
     }
   }
@@ -162,8 +165,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
   function getNewsItems() {
     return newsItems;
   }
-
-
 
   const handleAddCriteria = () => {
     if (!activeElement || !criteriaName) return;
@@ -188,7 +189,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const [selectedOption, setSelectedOption] = useState(
     !isPlainUser ? "Новости" : "Тесты"
   );
-
   useEffect(() => {
     setSelectedOption(!isPlainUser ? "Новости" : "Тесты");
   }, [isPlainUser]);
@@ -198,6 +198,12 @@ export const TestsResult: FC<VacancyWindowI> = ({
     setActiveElement("");
   };
 
+  let testDone = false;
+  if (test)
+    testDone =
+      testData?.logs
+        .map((log) => log.answers.find((ans) => ans.isAnswer))
+        .filter((el) => el !== undefined).length === test.questions.length;
   return (
     <MainLayout>
       <div style={{ display: "flex" }}>
@@ -245,66 +251,11 @@ export const TestsResult: FC<VacancyWindowI> = ({
           )}
         </div>
         {selectedOption === "Новости" ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginLeft: "10px",
-              width: "100vw",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button onClick={() => setIsAddingNews(true)}>
-                <PlusOutlined /> Добавить
-              </Button>
-            </div>
-            {selectedNews ? (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  flexDirection: "column",
-                  marginTop: "10px",
-                }}
-              >
-                <Card
-                  title={selectedNews.title}
-                  style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
-                  extra={
-                    <Space>
-                      <h5 style={{ margin: 0 }}>
-                        {selectedNews &&
-                          new Date(selectedNews.updatedAt).toLocaleDateString(
-                            "ru-RU"
-                          )}
-                      </h5>{" "}
-                      <Button
-                        type={"primary"}
-                        danger
-                        onClick={handleDeleteNews}
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                    </Space>
-                  }
-                >
-                  <Text style={{ whiteSpace: "pre-line" }}>
-                    {selectedNews.text}
-                  </Text>
-                </Card>
-              </div>
-            ) : (
-              <Result
-                status="info"
-                icon={<InfoOutlined />}
-                title={"Добро пожаловать"}
-                subTitle={
-                  "Приветствуем вас на портале тестирования ДГТУ. Выберите интересующую вас новость в меню слева."
-                }
-                style={{ margin: "0 auto" }}
-              />
-            )}
-          </div>
+          <NewsComponent
+            selectedNews={selectedNews}
+            setSelectedNews={setSelectedNews}
+            setActiveElement={setActiveElement}
+          />
         ) : activeElement && !isTestsLoading && !isFetTest ? (
           <Card
             title={test?.name}
@@ -313,8 +264,14 @@ export const TestsResult: FC<VacancyWindowI> = ({
                 {test && (
                   <Space>
                     <p>{`${test.questions.length} вопросов`}</p>
-                    <Link to={`/quiz/${activeElement}`}>
-                      <Button type="primary">Открыть тест</Button>
+                    <Link to={!testDone ? `/quiz/${activeElement}` : "/tests"}>
+                      <Button type="primary" disabled={testDone}>
+                        {!testData?.logs?.length || testData?.logs?.length < 1
+                          ? "Начать прохождение"
+                          : !testDone
+                          ? "Продолжить"
+                          : "Пройдено"}
+                      </Button>
                     </Link>
                   </Space>
                 )}
@@ -335,7 +292,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
             {testData && testData?.logs && (
               <>
                 <h4 style={{ color: "#1677FF", margin: "15px 0 -10px 0" }}>
-                  Результаты:
+                  Результаты{!testDone ? " (предварительные)" : ""}:
                 </h4>
                 <Divider
                   orientation="left"
@@ -346,7 +303,8 @@ export const TestsResult: FC<VacancyWindowI> = ({
                 ></Divider>
                 {test &&
                 !test?.meta?.decryptGroups &&
-                testData?.curInterpretation ? (
+                testData?.curInterpretation &&
+                testData.groups.length > 0 ? (
                   <>
                     <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
                       {testData?.byFormula} б. -{" "}

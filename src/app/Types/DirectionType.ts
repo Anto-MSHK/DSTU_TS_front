@@ -3,7 +3,7 @@ import { string } from "yup";
 export type AnswerT = {
   id: number;
   text: string;
-  isAnswer: boolean;
+  isAnswer?: boolean;
 };
 export type QuestionT = {
   id: number;

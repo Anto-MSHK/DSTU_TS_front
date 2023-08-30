@@ -7,13 +7,16 @@ import { MainLayout } from "../../layouts/MainLayout";
 import { useSignUpMutation } from "../../app/services/AuthApi";
 import { createToken } from "../../app/slices/authSlice";
 import { Formik } from "formik";
-import './register.css'
-import { firstStepFields, secondStepFields, thirdStepFields, steps, phoneRegExp } from './constants'
-import { isSubmitBtnAvailable } from './utils'
+import "./register.css";
+import {
+  firstStepFields,
+  secondStepFields,
+  thirdStepFields,
+  steps,
+  phoneRegExp,
+} from "./constants";
+import { isSubmitBtnAvailable } from "./utils";
 import { useUpdateUserMutation } from "../../app/services/UserApi";
-
-
-
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()
@@ -23,26 +26,28 @@ const SignupSchema = Yup.object().shape({
   locality: Yup.string().required("Обязательное поле!"),
   phoneNumber: Yup.string()
     .required("Обязательное поле!")
-    .matches(phoneRegExp, 'Недействительный номер')
-    .min(11, 'Слишком короткий')
-    .max(12, 'Слишком длинный'),
+    .matches(phoneRegExp, "Недействительный номер")
+    .min(11, "Слишком короткий")
+    .max(12, "Слишком длинный"),
   firstName: Yup.string().required("Обязательное поле!"),
   patronymic: Yup.string().required("Обязательное поле!"),
   lastName: Yup.string().required("Обязательное поле!"),
   age: Yup.number().required("Обязательное поле!"),
   schoolName: Yup.string().required("Обязательное поле!"),
-  schoolClass: Yup.number().required("Обязательное поле!").max(11, 'Неверный класс').min(1, 'Неверный класс'),
+  schoolClass: Yup.number()
+    .required("Обязательное поле!")
+    .max(11, "Неверный класс")
+    .min(1, "Неверный класс"),
 });
 
 export const RegisterPage = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate()
   const [signUp] = useSignUpMutation();
-  const [updateUser] = useUpdateUserMutation()
+  const [updateUser] = useUpdateUserMutation();
 
   const initialValues = {
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     phoneNumber: "",
     locality: "",
     firstName: "",
@@ -52,7 +57,6 @@ export const RegisterPage = () => {
     schoolName: "",
     schoolClass: "",
   };
-
 
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
@@ -66,40 +70,35 @@ export const RegisterPage = () => {
   };
 
   const items = steps.map((item) => ({ key: item.title, title: item.title }));
-
+  const navigate = useNavigate();
 
   const handleSubmit = async (content: any) => {
-    let userId = ''
+    let userId = "";
     signUp({
       email: content.email,
-      password: content.password
+      password: content.password,
     })
       .unwrap()
       .then((data) => {
-        dispatch(createToken(data) as any)
-        message.success('Пользователь успешно создан!')
-        userId = data.user.id
+        dispatch(createToken(data) as any);
+        message.success("Пользователь успешно создан!");
+        userId = data.user.id;
       })
-      .catch((err) => {
-        message.error(err.data.message)
-      })
-      .then(
-        () => {
-          if (userId) {
-            updateUser({ content, id: userId })
-              .unwrap()
-              .then((data) => {
-                if (data) {
-                  message.success('Данные успешно обновлены')
-                  navigate('/')
-                }
-              })
-              .catch((err) => {
-                message.error(err.data.message)
-              })
-          }
+      .catch((err) => {})
+      .then(() => {
+        if (userId) {
+          updateUser({ content, id: userId })
+            .unwrap()
+            .then((data) => {
+              if (data) {
+                message.success("Данные успешно обновлены");
+                navigate("/");
+              }
+            })
+            .catch((err) => {});
         }
-      )
+        navigate("/");
+      });
   };
 
   return (
@@ -121,50 +120,88 @@ export const RegisterPage = () => {
               handleSubmit,
             }) => (
               <form onSubmit={handleSubmit}>
-
                 <Steps current={current} items={items} />
                 <div style={{ marginTop: 24 }}>
                   <>
-                    {
-                      current === 0 &&
-
+                    {current === 0 && (
                       <>
-                        {
-                          firstStepFields.map((item) => {
-                            return (
-                              <div key={item.name + item.type}>
-                                <Input
-                                  className="register__input"
-                                  onChange={handleChange}
-                                  onBlur={handleBlur}
-                                  type={item.type}
-                                  name={item.name}
-                                  placeholder={item.placeholder}
-                                  value={values[item.name as keyof typeof values]}
-                                  status={errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] ? 'error' : ''}
-                                />
-                                {errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] && (
+                        {firstStepFields.map((item) => {
+                          return (
+                            <div key={item.name + item.type}>
+                              <Input
+                                className="register__input"
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                type={item.type}
+                                name={item.name}
+                                placeholder={item.placeholder}
+                                value={values[item.name as keyof typeof values]}
+                                status={
+                                  errors[item.name as keyof typeof errors] &&
+                                  touched[item.name as keyof typeof touched]
+                                    ? "error"
+                                    : ""
+                                }
+                              />
+                              {errors[item.name as keyof typeof errors] &&
+                                touched[item.name as keyof typeof touched] && (
                                   <Alert
-                                    message={errors[item.name as keyof typeof errors]}
+                                    message={
+                                      errors[item.name as keyof typeof errors]
+                                    }
                                     type="error"
                                     showIcon
                                     style={{ marginBottom: 10 }}
                                   />
                                 )}
-                              </div>
-                            )
-                          })
-                        }
-
+                            </div>
+                          );
+                        })}
                       </>
-                    }
+                    )}
                   </>
                   <>
-                    {
-                      current === 1 &&
+                    {current === 1 && (
                       <>
-                        {
-                          secondStepFields.map((item) => {
+                        {secondStepFields.map((item) => {
+                          return (
+                            <div key={item.name + item.type}>
+                              <Input
+                                className="register__input"
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                type={item.type}
+                                name={item.name}
+                                placeholder={item.placeholder}
+                                value={values[item.name as keyof typeof values]}
+                                status={
+                                  errors[item.name as keyof typeof errors] &&
+                                  touched[item.name as keyof typeof touched]
+                                    ? "error"
+                                    : ""
+                                }
+                              />
+                              {errors[item.name as keyof typeof errors] &&
+                                touched[item.name as keyof typeof touched] && (
+                                  <Alert
+                                    message={
+                                      errors[item.name as keyof typeof errors]
+                                    }
+                                    type="error"
+                                    showIcon
+                                    style={{ marginBottom: 10 }}
+                                  />
+                                )}
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    <>
+                      {current === 2 && (
+                        <>
+                          {thirdStepFields.map((item) => {
                             return (
                               <div key={item.name + item.type}>
                                 <Input
@@ -174,56 +211,34 @@ export const RegisterPage = () => {
                                   type={item.type}
                                   name={item.name}
                                   placeholder={item.placeholder}
-                                  value={values[item.name as keyof typeof values]}
-                                  status={errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] ? 'error' : ''}
+                                  value={
+                                    values[item.name as keyof typeof values]
+                                  }
+                                  status={
+                                    errors[item.name as keyof typeof errors] &&
+                                    touched[item.name as keyof typeof touched]
+                                      ? "error"
+                                      : ""
+                                  }
                                 />
-                                {errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] && (
-                                  <Alert
-                                    message={errors[item.name as keyof typeof errors]}
-                                    type="error"
-                                    showIcon
-                                    style={{ marginBottom: 10 }}
-                                  />
-                                )}
-                              </div>
-                            )
-                          })
-                        }
-                      </>
-                    }
-
-                    <>
-                      {
-                        current === 2 &&
-                        <>
-                          {
-                            thirdStepFields.map((item) => {
-                              return (
-                                <div key={item.name + item.type}>
-                                  <Input
-                                    className="register__input"
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    type={item.type}
-                                    name={item.name}
-                                    placeholder={item.placeholder}
-                                    value={values[item.name as keyof typeof values]}
-                                    status={errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] ? 'error' : ''}
-                                  />
-                                  {errors[item.name as keyof typeof errors] && touched[item.name as keyof typeof touched] && (
+                                {errors[item.name as keyof typeof errors] &&
+                                  touched[
+                                    item.name as keyof typeof touched
+                                  ] && (
                                     <Alert
-                                      message={errors[item.name as keyof typeof errors]}
+                                      message={
+                                        errors[item.name as keyof typeof errors]
+                                      }
                                       type="error"
                                       showIcon
                                       style={{ marginBottom: 10 }}
                                     />
                                   )}
-                                </div>
-                              )
-                            })
-                          }
+                              </div>
+                            );
+                          })}
                         </>
-                      }
+                      )}
                     </>
                   </>
 
@@ -239,11 +254,11 @@ export const RegisterPage = () => {
                       disabled={isSubmitBtnAvailable(values, errors)}
                       className="register__button"
                     >
-                      Перейти к тестированию
+                      Зарегистрироваться
                     </Button>
                   )}
                   {current > 1 && (
-                    <Button style={{ margin: '0 8px' }} onClick={() => prev()}>
+                    <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
                       Назад
                     </Button>
                   )}
