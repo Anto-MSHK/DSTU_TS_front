@@ -35,6 +35,7 @@ import {
   useDeleteNewsMutation,
   useGetNewsQuery,
 } from "../../app/services/NewsApi";
+import {NewsComponent} from "../../components/NewsComponent/NewsComponent";
 const { Text } = Typography;
 
 interface VacancyWindowI {
@@ -75,9 +76,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
     undefined
   );
   const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
-  const [newsTitle, setNewsTitle] = useState("");
-  const [newsContent, setNewsContent] = useState("");
-  const [isAddingNews, setIsAddingNews] = useState(false);
 
   const resultChartData = testData?.criterias.map((item) => {
     if (test?.questions) {
@@ -122,15 +120,15 @@ export const TestsResult: FC<VacancyWindowI> = ({
   }
   const items: MenuProps["items"] = getMenuItmes();
   const onClick: MenuProps["onClick"] = (e) => {
-    setSkip(false);
-    setActiveElement(e.key);
-    !isPlainUser && setSkipCriteriaReq(false);
-
-    if (selectedOption === "Новости") {
+    if (selectedOption !== "Новости") {
+      setSkip(false);
+      setActiveElement(e.key);
+      !isPlainUser && setSkipCriteriaReq(false);
+    } else {
       const selectedNewsId = e.key.replace("news", "");
       const selectedNewsItem =
-        news &&
-        news.find((item) => item.id && item.id.toString() === selectedNewsId);
+          news &&
+          news.find((item) => item.id && item.id.toString() === selectedNewsId);
       setSelectedNews(selectedNewsItem);
     }
   };
@@ -165,41 +163,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
     return newsItems;
   }
 
-  const [addNewsMutation] = useAddNewsMutation();
 
-  const handleAddNews = async () => {
-    try {
-      const newsData: Partial<NewsT> = {
-        title: newsTitle,
-        text: newsContent,
-      };
-      const response = await addNewsMutation(newsData as NewsT);
-      console.log("News added successfully:", response);
-      setIsAddingNews(false);
-      setActiveElement("");
-      setNewsTitle("");
-      setNewsContent("");
-    } catch (error) {
-      console.error("Error adding news:", error);
-      message.error("An error occurred while adding news.");
-    }
-  };
-
-  const [deleteNewsMutation] = useDeleteNewsMutation();
-
-  const handleDeleteNews = async () => {
-    try {
-      if (!selectedNews) {
-        return;
-      }
-      const response = await deleteNewsMutation(selectedNews);
-      console.log("News deleted successfully:", response);
-      setSelectedNews(undefined);
-    } catch (error) {
-      console.error("Error deleting news:", error);
-      message.error("An error occurred while deleting news.");
-    }
-  };
 
   const handleAddCriteria = () => {
     if (!activeElement || !criteriaName) return;
@@ -531,35 +495,6 @@ export const TestsResult: FC<VacancyWindowI> = ({
           <Spin size="large" style={{ width: "100%" }} />
         )}
       </div>
-      <Modal
-        title="Добавление новости"
-        visible={isAddingNews}
-        onCancel={() => setIsAddingNews(false)}
-        cancelText={"Отменить"}
-        okText={"Добавить"}
-        onOk={handleAddNews}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <Input
-            value={newsTitle}
-            onChange={(e) => setNewsTitle(e.target.value)}
-            placeholder="Заголовок новости"
-          />
-          <Input.TextArea
-            value={newsContent}
-            onChange={(e) => setNewsContent(e.target.value)}
-            rows={4}
-            placeholder="Текст новости"
-          />
-        </div>
-      </Modal>
     </MainLayout>
   );
 };
-function deleteNewsMutation(arg0: { id: number }) {
-  throw new Error("Function not implemented.");
-}
-
-function addNewsMutation(arg0: { title: string; text: string }) {
-  throw new Error("Function not implemented.");
-}
