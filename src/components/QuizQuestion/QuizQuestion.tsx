@@ -112,6 +112,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
 
   return (
     <Card className={styles.card}>
+      <h3 style={{ margin: "0 0 10px 0" }}>{question}</h3>
       <Radio.Group
         className={styles.radioGroup}
         name="radiogroup"

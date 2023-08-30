@@ -2,6 +2,7 @@ import React, { FC, useEffect, useState } from "react";
 import {
   Button,
   Card,
+  Divider,
   Empty,
   Input,
   Menu,
@@ -12,6 +13,7 @@ import {
   Row,
   Segmented,
   Space,
+  Spin,
   Tag,
   theme,
   Typography,
@@ -53,13 +55,19 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const [activeElement, setActiveElement] = useState("");
   const [skip, setSkip] = useState(true);
   const [skipCriteriaReq, setSkipCriteriaReq] = useState(true);
-  const { data: testData, isLoading: isTestsLoading } =
-    useGetUserTestResultsByIdQuery(activeElement, {
-      skip,
-    });
-  const { data: test } = useGetTestByIdQuery(activeElement, {
+  const {
+    data: testData,
+    isLoading: isTestsLoading,
+    isFetching: isTestsFetching,
+  } = useGetUserTestResultsByIdQuery(activeElement, {
     skip,
   });
+  const { data: test, isFetching: isFetTest } = useGetTestByIdQuery(
+    activeElement,
+    {
+      skip,
+    }
+  );
   const { data: testCriterias } = useGetTestCriteriasQuery(activeElement, {
     skip: skipCriteriaReq,
   });
@@ -72,10 +80,24 @@ export const TestsResult: FC<VacancyWindowI> = ({
   const [isAddingNews, setIsAddingNews] = useState(false);
 
   const resultChartData = testData?.criterias.map((item) => {
+    if (test?.questions) {
+      return {
+        result: item.result,
+        name: item.criteria.name,
+        id: item.criteria.id,
+      };
+    } else
+      return {
+        result: 0,
+        name: item.criteria.name,
+        id: item.criteria.id,
+      };
+  });
+  const resultGroupData = testData?.groups.map((item) => {
     return {
-      result: item.result * 10,
-      name: item.criteria.name,
-      id: item.criteria.id,
+      result: item.count,
+      name: item.group,
+      id: item.group,
     };
   });
   const [addCriteria] = useAddCriteriaMutation();
@@ -316,7 +338,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               />
             )}
           </div>
-        ) : activeElement ? (
+        ) : activeElement && !isTestsLoading && !isFetTest ? (
           <Card
             title={test?.name}
             extra={
@@ -342,27 +364,94 @@ export const TestsResult: FC<VacancyWindowI> = ({
             }}
           >
             <Text strong>Описание: {test?.desc}</Text>
-            {resultChartData?.length && isPlainUser ? (
-              <Space size={100} wrap style={{ marginTop: "50px" }}>
-                {resultChartData.map((item) => {
-                  return (
-                    <div
-                      key={item.id}
-                      style={{ display: "flex", flexDirection: "column" }}
-                    >
-                      <Progress
-                        type="circle"
-                        percent={item.result}
-                        strokeWidth={10}
+
+            <Divider
+              style={{
+                backgroundColor: "#1677FF",
+                margin: "15px 0 15px 0",
+              }}
+            />
+            {test &&
+            !test?.meta?.decryptGroups &&
+            testData?.curInterpretation ? (
+              <>
+                <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
+                  {testData?.byFormula} б. - {testData?.curInterpretation.text}
+                </h1>
+              </>
+            ) : !testData || isTestsLoading ? (
+              <Spin />
+            ) : (
+              testData && !testData?.curInterpretation && <></>
+            )}
+
+            {!test?.meta?.decryptGroups &&
+            !isTestsLoading &&
+            !testData?.curInterpretation &&
+            resultChartData?.length &&
+            isPlainUser ? (
+              <Space
+                style={{
+                  width: "100%",
+                  justifyContent: "space-between",
+                  marginTop: -10,
+                  gap: 25,
+                }}
+                align="center"
+              >
+                {resultChartData
+                  .sort((a, b) => b.result - a.result)
+                  .map((item) => {
+                    return (
+                      <Result
+                        title={item.result}
+                        style={{ padding: 0 }}
+                        icon={null}
+                        subTitle={item.name}
                       />
-                      <Text>{item.name}</Text>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </Space>
             ) : (
               ""
             )}
+            {resultGroupData?.length && isPlainUser ? (
+              <Space
+                style={{
+                  width: "100%",
+                  justifyContent: "start",
+                  gap: 25,
+                  marginTop: -10,
+                }}
+                align="center"
+              >
+                {test?.meta?.decryptGroups &&
+                  resultGroupData
+                    .sort((a, b) => b.result - a.result)
+                    .map((item) => {
+                      return (
+                        <Result
+                          title={item.result}
+                          style={{ padding: 0 }}
+                          icon={null}
+                          subTitle={
+                            test?.meta.decryptGroups.find(
+                              (gr) => gr.name === item.name
+                            )?.text
+                          }
+                        />
+                      );
+                    })}
+              </Space>
+            ) : (
+              ""
+            )}
+            <Divider
+              style={{
+                backgroundColor: "#1677FF",
+                margin: "15px 0 15px 0",
+              }}
+            />
             {!isPlainUser && (
               <div style={{ marginTop: "25px" }}>
                 <Text strong>Критерии теста:</Text>
@@ -418,7 +507,7 @@ export const TestsResult: FC<VacancyWindowI> = ({
               </div>
             )}
           </Card>
-        ) : (
+        ) : !isTestsLoading && !isFetTest ? (
           <Result
             status="info"
             icon={<InfoOutlined />}
@@ -428,6 +517,8 @@ export const TestsResult: FC<VacancyWindowI> = ({
             }
             style={{ margin: "0 auto" }}
           />
+        ) : (
+          <Spin size="large" style={{ width: "100%" }} />
         )}
       </div>
       <Modal

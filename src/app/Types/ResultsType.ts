@@ -1,4 +1,3 @@
-
 export type ResultsT = {
   testInfo: {
     id: number;
@@ -20,29 +19,34 @@ export type ResultsT = {
 };
 
 export type CriteriaT = {
-  id: number,
-  name: string
-}
+  id: number;
+  name: string;
+};
 export type CriteriasT = {
-  criteria: CriteriaT,
-  result: number,
-}
+  criteria: CriteriaT;
+  result: number;
+};
+export type GroupT = {
+  group: string;
+  count: number;
+};
 
 export type QuestionLogT = {
-  text: string,
-  type: string,
-  answers: AnswerLogT[],
-}
+  text: string;
+  type: string;
+  answers: AnswerLogT[];
+};
 
 export type AnswerLogT = {
-  id: number,
-  text: string,
-  criteria: CriteriaT,
-}
+  id: number;
+  text: string;
+  criteria: CriteriaT;
+};
 
 export type ResultByIdT = {
-  criterias: CriteriasT[],
- /*  "criterias": [
+  criterias: CriteriasT[];
+  groups: GroupT[];
+  /*  "criterias": [
     {
       "criteria": [
         {
@@ -53,7 +57,12 @@ export type ResultByIdT = {
       "result": 12
     }
   ], */
-  logs: AnswerLogT
+  logs: AnswerLogT;
+  byFormula: number;
+  curInterpretation: {
+    value: string[];
+    text: string;
+  };
   /* "logs": [
     {
       "question": {
@@ -82,4 +91,4 @@ export type ResultByIdT = {
       ]
     }
   ] */
-}
+};
