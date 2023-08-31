@@ -15,6 +15,8 @@ import style from "./HelloMessage.module.css";
 import dstuImage from "../../assets/image/DSTU.jpg";
 import { useGetAllNewsQuery } from "../../app/services/NewsApi";
 import { Contacts } from "../../components/Contacts/Contacts";
+import { Link } from "react-router-dom";
+
 const { Text, Title, Paragraph } = Typography;
 
 const image1 = require("../../assets/image/persons/abakumova.png");
@@ -23,7 +25,6 @@ const image3 = require("../../assets/image/persons/bondarenko.png");
 const image4 = require("../../assets/image/persons/gerasin.png");
 const image5 = require("../../assets/image/persons/osetrova.png");
 const image6 = require("../../assets/image/persons/svistunov.png");
-
 const contactsInfo = [
   {
     name: "Абакумова Ирина Владимировна",
@@ -66,23 +67,22 @@ export const HelloMessage: FC = () => {
       layoutStyle={{ padding: 0 }}
     >
       <Space direction="vertical" className={style.content_wrapper}>
-        <Space className={style.main_info_wrapper}>
-          <Paragraph style={{ display: "flex", flexDirection: "column" }}>
-            <Title style={{ color: "white", fontSize: 100, margin: 0 }}>
+        <Space className={style.main_info_wrapper}  >
+          <Paragraph className={style.main_info_parag}>
+            <Title className={style.main_project_title}>
               НАСТАВНИК+
             </Title>
             <div
               style={{
-                marginLeft: "20px",
                 display: "flex",
                 flexDirection: "column",
                 textAlign: "center",
               }}
             >
-              <Text style={{ color: "white", fontSize: 25 }}>
+              <Text className={style.main_project_desc}>
                 cтань лучшим с наставником
               </Text>
-              <Text style={{ color: "white", fontSize: 25, margin: -10 }}>
+              <Text className={style.main_project_desc} >
                 cтань лучшим наставником
               </Text>
             </div>
@@ -91,26 +91,19 @@ export const HelloMessage: FC = () => {
         <Divider
           orientation="center"
           plain
-          style={{ fontSize: 45, color: "rgb(22, 122, 255)", fontWeight: 600 }}
-        >
-          О проекте
-        </Divider>
+          children={<Text  className={style.divider_title} >О проекте</Text>}
+        />
         <Space size={[100, 100]} className={style.about_project_wrapper}>
           <Paragraph
-            style={{ display: "flex", flexDirection: "column", width: "600px" }}
+            className={style.about_project_parag}
           >
-            {/* <Title
-              style={{ fontSize: "80px", marginTop: 0, marginBottom: "20px" }}
-            >
-              О проекте
-            </Title> */}
             <Text
               style={{ fontSize: "25px", marginLeft: "5px", fontWeight: 600 }}
             >
               Наши цели и задачи:
             </Text>
             <Divider />
-            <Text style={{ fontSize: "25px" }}>
+            <Text className={style.about_project_content}>
               Цель заключается в формировании универсальных компетенций,
               необходимых для самостоятельного, осмысленного выбора дальнейшей
               образовательной траектории (вуза) и профессионального
@@ -128,12 +121,10 @@ export const HelloMessage: FC = () => {
         <Divider
           orientation="center"
           plain
-          style={{ fontSize: 45, color: "rgb(22, 122, 255)", fontWeight: 600 }}
-        >
-          Дополнительно
-        </Divider>
+          children={<Text  className={style.divider_title} >Дополнительно</Text>}
+        />
         <Space className={style.stats_info_wrapper} size={[100, 100]}>
-          <Paragraph style={{ width: "300px" }}>
+          <Paragraph className={style.stats_parag} style={{ width: "300px" }}>
             <Title
               style={{ fontSize: "40px", marginTop: 0, marginBottom: "20px" }}
             >
@@ -144,7 +135,7 @@ export const HelloMessage: FC = () => {
               проектной профориентационно значимой деятельности
             </Text>
           </Paragraph>
-          <Paragraph style={{ width: "200px" }}>
+          <Paragraph className={style.stats_parag} style={{ width: "200px" }}>
             <Title
               style={{ fontSize: "40px", marginTop: 0, marginBottom: "20px" }}
             >
@@ -154,7 +145,7 @@ export const HelloMessage: FC = () => {
               пройдут обучение по программам наставничества
             </Text>
           </Paragraph>
-          <Paragraph style={{ width: "250px" }}>
+          <Paragraph className={style.stats_parag} style={{ width: "250px" }}>
             <Title
               style={{ fontSize: "40px", marginTop: 0, marginBottom: "20px" }}
             >
@@ -169,40 +160,37 @@ export const HelloMessage: FC = () => {
         <Divider
           orientation="center"
           plain
-          style={{ fontSize: 45, color: "rgb(22, 122, 255)", fontWeight: 600 }}
-        >
-          Новости
-        </Divider>
+          children={<Text  className={style.divider_title} >Новости</Text>}
+        />
         <Space direction="vertical" className={style.news_wrapper}>
-          <Row gutter={[32, 32]}>
+          <Row gutter={[32, 32]} className={style.news_row_container} >
             {news?.length ? (
               news.map((item) => {
                 return (
-                  <Col span={8}>
-                    <Card
-                      bodyStyle={{
-                        display: "flex",
-                        flexDirection: "column",
-                        padding: "15px",
-                      }}
-                      style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
-                      bordered
-                      cover={
-                        <Image
-                          style={{ maxHeight: "230px", objectFit: "cover" }}
-                          alt="example"
-                          src={dstuImage}
-                          preview={false}
-                        />
-                      }
-                    >
-                      <Title style={{ margin: "0" }} level={4}>
-                        {item.title}
-                      </Title>
-                      <Text style={{ margin: "0 0 0 auto" }}>
-                        {new Date(item.updatedAt).toLocaleDateString()}
-                      </Text>
-                    </Card>
+                  <Col key={item.id} span={8} style={{ minWidth:'280px'}}>
+                    <Link to={`/news/${item.id}`}>
+                      <Card
+                        onClick={() => { }}
+                        style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
+                        bordered
+                      >
+                        <Card.Grid style={{
+                          width: '100%',
+                          display: "flex",
+                          flexDirection: "column",
+                          padding: "15px",
+                       
+                        }}>
+                          <Title style={{ margin: "0" }} level={4}>
+                            {item.title}
+                          </Title>
+                          <Text style={{ margin: "0 0 0 auto" }}>
+                            {new Date(item.updatedAt).toLocaleDateString()}
+                          </Text>
+                        </Card.Grid>
+
+                      </Card>
+                    </Link>
                   </Col>
                 );
               })
@@ -214,10 +202,8 @@ export const HelloMessage: FC = () => {
         <Divider
           orientation="center"
           plain
-          style={{ fontSize: 45, color: "rgb(22, 122, 255)", fontWeight: 600 }}
-        >
-          Команда проекта
-        </Divider>
+          children={<Text  className={style.divider_title} >Команда проекта</Text>}
+        />
         <Contacts contactsInfo={contactsInfo} />
       </Space>
     </MainLayout>
