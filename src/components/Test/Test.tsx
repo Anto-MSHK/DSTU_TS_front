@@ -27,12 +27,18 @@ export const Test: FC<TestFC> = ({ id, title, desc, meta, questions }) => {
 
   useEffect(() => {
     if (results) {
+      if (results?.logs && questions) {
+        let allAnswers = results?.logs
+          ?.map((log) => log.answers.find((ans) => ans.isAnswer))
+          .filter((el) => el !== undefined);
+        setTestDone(allAnswers?.length === questions.length);
+      }
       let isGroups =
         results.groups &&
         meta?.decryptGroups &&
         meta?.decryptGroups?.length > 0;
       let isCriterias = results.criterias && results.groups?.length < 1;
-      if (results.curInterpretation && results.byFormula) {
+      if (results.curInterpretation && results.byFormula && testDone) {
         setCurResult(
           <h1 style={{ margin: "0 0 10px 0", color: "#1677FF" }}>
             {results?.byFormula} б. - {results?.curInterpretation.text}
@@ -78,13 +84,9 @@ export const Test: FC<TestFC> = ({ id, title, desc, meta, questions }) => {
               })}
           </Row>
         );
+      } else if (!curResult) {
+        setCurResult(<h2>Тест не пройден</h2>);
       }
-    }
-    if (results?.logs && questions) {
-      let allAnswers = results?.logs
-        ?.map((log) => log.answers.find((ans) => ans.isAnswer))
-        .filter((el) => el !== undefined);
-      setTestDone(allAnswers?.length === questions.length);
     }
   }, [meta?.decryptGroups, questions, results]);
 
@@ -99,15 +101,15 @@ export const Test: FC<TestFC> = ({ id, title, desc, meta, questions }) => {
       key={id}
       headStyle={{ whiteSpace: "break-spaces", margin: "10px 0 0 0" }}
       extra={
-        results &&
         widthSize > mobileWidth && (
           <Space>
             <p>{`${questions?.length} вопросов`}</p>
             <Link to={!testDone ? `/quiz/${id}` : "/tests"}>
               <Button type="primary" disabled={testDone}>
                 {!results?.logs?.length || results?.logs?.length < 1
-                  ? "Начать прохождение"
-                  : !testDone
+                  ? "Начать"
+                  : (!testDone && !results?.logs?.length) ||
+                    results?.logs?.length > 1
                   ? "Продолжить"
                   : "Пройдено"}
               </Button>
@@ -123,7 +125,7 @@ export const Test: FC<TestFC> = ({ id, title, desc, meta, questions }) => {
             <Button type="primary" disabled={testDone}>
               {!results?.logs?.length || results?.logs?.length < 1
                 ? "Начать прохождение"
-                : !testDone
+                : !testDone && results?.logs?.length > 1
                 ? "Продолжить"
                 : "Пройдено"}
             </Button>
@@ -141,7 +143,13 @@ export const Test: FC<TestFC> = ({ id, title, desc, meta, questions }) => {
             backgroundColor: "#1677FF",
           }}
         />
-        {!isResultsLoading ? curResult : <Spin size="large" />}
+        {!isResultsLoading && !testDone ? (
+          <h2>Тест не пройден</h2>
+        ) : !isResultsLoading && testDone ? (
+          curResult
+        ) : (
+          <Spin size="large" />
+        )}
         <Divider
           style={{
             margin: "15px 0 15px 0",

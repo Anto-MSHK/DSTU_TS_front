@@ -29,6 +29,7 @@ import { useGetUsersQuery, userAPI } from "../../app/services/UserApi";
 import { useSaveAnswersMutation } from "../../app/services/TestsApi";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { getMarkedAnswer } from "../../app/slices/quizSlice";
+import useScreenWidth from "../../hooks/useScreenSize";
 
 interface VacancyQuizI {
   /* vacancyList: VacancyT[], */
@@ -41,7 +42,9 @@ interface AnswersState {
 export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
   const { id } = useParams<{ id: string }>();
   const { data: users } = useGetUsersQuery("1");
-  const { data: test } = useGetTestByIdQuery(id as string);
+  const { data: test, isLoading: isLoadingTest } = useGetTestByIdQuery(
+    id as string
+  );
   const [answeredQuestionCount, setAnsweredQuestionCount] = useState<number>(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>(
     new Array(test?.questions.length).fill(false)
@@ -232,73 +235,86 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
   };
   const { Header, Content, Footer, Sider } = Layout;
   const { token } = theme.useToken();
+  const widthSize = useScreenWidth();
+  const mobileWidth = 800;
   return (
     <MainLayout withBacking>
       <div style={{ display: "flex", gap: 10 }}>
         <div style={{ position: "relative", marginRight: 10 }}>
-          <Card
-            style={{
-              padding: 0,
-              borderRadius: 15,
-              position: "sticky",
-              top: 20,
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <div
+          {test &&
+          test.questions.length < 21 &&
+          !isLoadingTest &&
+          widthSize > mobileWidth ? (
+            <Card
               style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 10,
-                marginBottom: 20,
-                minWidth: 250,
+                padding: 0,
+                borderRadius: 15,
+                position: "sticky",
+                top: 20,
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <h3 style={{ margin: "auto" }}>
-                {`Вопросы - `}
-                {test
-                  ? `${answerCount}/${
-                      test?.questions.length === undefined
-                        ? "0"
-                        : test?.questions.length
-                    }`
-                  : "загрузка"}
-              </h3>
-            </div>
-            {test ? (
-              <Sider
+              <div
                 style={{
-                  background: token.colorBgContainer,
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 10,
+                  marginBottom: 20,
+                  minWidth: 250,
                 }}
-                width={250}
               >
-                <Anchor>
-                  {test?.questions.map((ques, index) => {
-                    const curQuest = quizAnswers.find(
-                      (el) => el.questionId === ques?.id
-                    );
-                    const textColor =
-                      curQuest && curQuest.answerIds.length > 0
-                        ? "#bfbfbf"
-                        : "black";
-                    return (
-                      <Anchor.Link
-                        key={`part-${ques?.id}`}
-                        href={`#part-${ques?.id}`}
-                        title={
-                          <span style={{ color: textColor }}>
-                            {`${index + 1}. ${ques.text}`}
-                          </span>
-                        }
-                      />
-                    );
-                  })}
-                </Anchor>
-              </Sider>
-            ) : (
-              <Spin size="large" style={{ width: "100%" }} />
-            )}
-          </Card>
+                <h3 style={{ margin: "auto" }}>
+                  {`Вопросы - `}
+                  {test
+                    ? `${answerCount}/${
+                        test?.questions.length === undefined
+                          ? "0"
+                          : test?.questions.length
+                      }`
+                    : "загрузка"}
+                </h3>
+              </div>
+              {test ? (
+                <Sider
+                  style={{
+                    background: token.colorBgContainer,
+                  }}
+                  width={250}
+                >
+                  <Anchor>
+                    {test?.questions.map((ques, index) => {
+                      const curQuest = quizAnswers.find(
+                        (el) => el.questionId === ques?.id
+                      );
+                      const textColor =
+                        curQuest && curQuest.answerIds.length > 0
+                          ? "#bfbfbf"
+                          : "black";
+                      return (
+                        <Anchor.Link
+                          key={`part-${ques?.id}`}
+                          href={`#part-${ques?.id}`}
+                          title={
+                            <span
+                              style={{
+                                color: textColor,
+                              }}
+                            >
+                              {`${index + 1}. ${ques.text}`}
+                            </span>
+                          }
+                        />
+                      );
+                    })}
+                  </Anchor>
+                </Sider>
+              ) : (
+                <Spin size="large" style={{ width: "100%" }} />
+              )}
+            </Card>
+          ) : (
+            isLoadingTest && <Spin size="large" style={{ width: "100%" }} />
+          )}
         </div>
         {contentList[activeTabKey1]}
       </div>
@@ -315,7 +331,6 @@ export const VacancyQuiz: React.FC<VacancyQuizI> = () => {
             size="large"
             type="primary"
             onClick={() => sendAnswers(true)}
-            disabled={isLoading || answerCount < test.questions.length}
             style={{}}
           >
             Отправить ответы

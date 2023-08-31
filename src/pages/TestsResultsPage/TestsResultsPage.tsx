@@ -14,7 +14,7 @@ export const TestsResultsPage = () => {
     useGetAllTestsQuery();
   const { data: news, isLoading: isNewsLoading } = useGetNewsQuery();
   const widthSize = useScreenWidth();
-  const mobileWidth = 600;
+  const mobileWidth = 800;
   return (
     <MainLayout>
       <Space
