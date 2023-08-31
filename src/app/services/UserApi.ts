@@ -33,8 +33,8 @@ export const userAPI = createApi({
         body: content,
       }),
     }),
-    getUserTestResultsById: build.query<ResultByIdT, string>({
-      query: (id: string) => ({
+    getUserTestResultsById: build.query<ResultByIdT, number | string>({
+      query: (id: number | string) => ({
         url: `users/result/${id}`,
         method: "GET",
         providesTags: () => ["Results"],

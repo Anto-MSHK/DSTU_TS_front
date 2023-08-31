@@ -15,7 +15,10 @@ import { useSelector } from "react-redux";
 import { useGetDirectionsQuery } from "./app/services/DirectionApi";
 import { useAllTestsQuery, useGetUserQuery } from "./app/services/UserApi";
 import { TestsResult } from "./pages/TestsResult/TestsResults";
+
 import { News } from "./pages/News/News";
+
+import { TestsResultsPage } from "./pages/TestsResultsPage/TestsResultsPage";
 
 const App: React.FC = () => {
   const select = useSelector(getToken());
@@ -101,17 +104,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={<HelloMessage />} />
-          <Route
-            path="/tests"
-            element={
-              <TestsResult
-                data={userTests}
-                isPlainUser
-                isLoading={userTestsLoading}
-                isError={userTestsError}
-              />
-            }
-          />
+          <Route path="/tests" element={<TestsResultsPage />} />
 
           <Route
             path="/tests/:id"

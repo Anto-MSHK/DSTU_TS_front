@@ -4,6 +4,7 @@ import { Head } from "./Head";
 import { Nav } from "./Nav";
 import { data } from "../app/dataExample";
 import { useLocation } from "react-router-dom";
+import useScreenWidth from "../hooks/useScreenSize";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -24,7 +25,8 @@ export const MainLayout: FC<MainLayoutI> = ({
   const { token } = theme.useToken();
   const style = contentStyle || { padding: "0 30px 0 30px" };
   const location = useLocation();
-
+  const widthSize = useScreenWidth();
+  const mobileWidth = 600;
   return (
     <Space direction="vertical" style={{ width: "100%" }} size={[0, 48]}>
       <Layout style={{ minHeight: "100vh", height: "fit-content" }}>
@@ -34,7 +36,7 @@ export const MainLayout: FC<MainLayoutI> = ({
           <Layout
             style={
               layoutStyle || {
-                padding: "20px 20px",
+                padding: widthSize > mobileWidth ? "20px 20px" : "0px",
                 borderRadius: 10,
               }
             }
