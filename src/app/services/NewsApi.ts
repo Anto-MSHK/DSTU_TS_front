@@ -14,6 +14,11 @@ export const newsApi = createApi({
         url: `/news/all`,
       }),
     }),
+    getNewsById:builder.query<NewsT, string>({
+      query: (id: string) => ({
+        url: `/news/${id}`,
+      }),
+    }),
     getNews: builder.query<NewsT[], void>({
       query: () => ({
         url: `/news/all`,
@@ -49,4 +54,5 @@ export const {
   useGetNewsQuery,
   useAddNewsMutation,
   useGetAllNewsQuery,
+  useGetNewsByIdQuery,
 } = newsApi;

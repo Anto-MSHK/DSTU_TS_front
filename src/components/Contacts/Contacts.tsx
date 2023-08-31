@@ -16,7 +16,7 @@ export const Contacts: FC<contactsI> = ({ contactsInfo }) => {
                             <Card className={style.card}>
                                 <div className={style.card_content}>
                                     <div className={style.image_container}>
-                                        <Image src={el.avatar} width={360} height={380} preview={false} />
+                                        <Image className={style.image} src={el.avatar} width={360} height={380} preview={false} />
                                     </div>
                                     <div className={style.text_container}>
                                         <h3>{el.name}</h3>
